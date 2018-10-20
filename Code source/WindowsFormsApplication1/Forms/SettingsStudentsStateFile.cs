@@ -100,7 +100,11 @@ namespace WindowsFormsApplication1.Forms
 
                 if(path_to_new_file!="")
                 {
-                    ToolsClass.Settings.changeStudentStateFile(path_to_new_file);
+                    int res = ToolsClass.Settings.changeStudentStateFile(path_to_new_file);
+                    if(res != ToolsClass.Definition.NO_ERROR_INT_VALUE)
+                    {
+                        MessageBox.Show("Une erreur est survenue : impossible de mettre à jour la base de données à partir du fichier source selectionné !");
+                    }
                 }
 
             }

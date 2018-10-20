@@ -130,7 +130,10 @@ public class Error
                 correspondance += "Impossible de supprimer le fichier";
                 break;
             case "CATSSF": //Cannot Access to Student State File
-                correspondance += "Impossible de lire le fichier contenant les informations des élèves";
+                correspondance += "Impossible de lire le fichier contenant les informations des élèves\nVérifier les numéros de colonnes fournies";
+                break;
+            case "CASITDB": //Cannot Add Student Into The DataBase
+                correspondance += "Impossible d'ajouter un étudiant depuis le fichier source dans la base de données\nIl est possible que la base de données soit inaccessible pour le moment";
                 break;
             case "FTANRFIDTDB": //Fail To Add New RFID To DataBase
                 correspondance += "Le fichier contenant les identifiants RFID n'est pas conforme";

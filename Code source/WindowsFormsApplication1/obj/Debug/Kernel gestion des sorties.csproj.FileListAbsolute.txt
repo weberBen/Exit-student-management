@@ -44,3 +44,28 @@ C:\Users\Ben Weber\Desktop\Collège Paul Bert\gestion_deplacement_eleves\Windows
 C:\Users\Ben Weber\Desktop\Collège Paul Bert\gestion_deplacement_eleves\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\Newtonsoft.Json.xml
 C:\Users\Ben Weber\Desktop\Collège Paul Bert\gestion_deplacement_eleves\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\Kernel gestion des sorties.exe
 C:\Users\Ben Weber\Desktop\Collège Paul Bert\gestion_deplacement_eleves\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\Kernel gestion des sorties.pdb
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\Kernel gestion des sorties.exe.config
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\Kernel gestion des sorties.exe
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\Kernel gestion des sorties.pdb
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.BrowseStudentData.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.AccessManagementForm.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.AutoClosingMessageBox.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SettingsAccessToServerFile.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SettingsStudentPhoto.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SchoolDataForm.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SettingsDataConnexionWebsite.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SetingsMailsSender.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SettingsStudentsStateFile.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SettingsList.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SettingsServerElements.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.MainForm.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Forms.SettingsLengthExitBreak.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\Kernel gestion des sorties.csproj.GenerateResource.Cache
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\Kernel gestion des sorties.exe
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\Kernel gestion des sorties.pdb
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\Database_Students_Management.mdf
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\bin\Debug\Database_Students_Management_log.ldf
+C:\Users\Ben Weber\Desktop\Documents\Collège paul bert\Automatisation sortie élèves\Application\WindowsFormsApplication1\WindowsFormsApplication1\obj\Debug\Kernel gestion des sorties.csprojResolveAssemblyReference.cache

@@ -61,6 +61,8 @@ public partial class MainForm : Form
         private const int TIMER_BEFORE_COLLECT_DATA_MIN = 60;//minutes
         private const int TIMER_INTERVAL_COLLECT_DATE = TIMER_BEFORE_COLLECT_DATA_MIN * 60000;//ms
 
+        private string actual_text_banner;
+        private Color actual_color_banner;
 
         public MainForm()
         {
@@ -77,10 +79,13 @@ public partial class MainForm : Form
                 changeBanner("Serveur démarré avec succès", CUSTOM_GREEN);
             }
 
+            actual_text_banner = this.displayEventTextBox.Text;
+            actual_color_banner = this.displayEventTextBox.BackColor;
+
             /* User has to been connected in order to use the app physically
              * And each user have an accreditation level that does not cover all the possible action
              * Thus for each allowed action we register the need accreditation level
-           */
+            */
             foreach (ToolStripMenuItem item in menuStrip1.Items)
             {
                 switch (item.Name.ToLower()) 
@@ -105,7 +110,6 @@ public partial class MainForm : Form
                     sub_item.Click += new System.EventHandler(this.submenuItem_Click);
                 }
             }
-
 
             SecurityManager.setConnection("", null);
 
@@ -159,6 +163,7 @@ public partial class MainForm : Form
                 short_secure_id.Dispose();
             /*DELETE ----------------------------------------------------------------------------------------------------------------------------*/
 
+            
         }
 
 
@@ -226,26 +231,69 @@ public partial class MainForm : Form
             this.Close(); //to turn off current app
         }
 
+        private void bannerToPreviousState()
+        {
+            if ( (actual_text_banner != this.displayEventTextBox.Text) || (actual_color_banner != this.displayEventTextBox.BackColor) )
+            {
+                this.displayEventTextBox.Text = actual_text_banner;
+                this.displayEventTextBox.BackColor = actual_color_banner;
+
+                this.Refresh();
+            }
+        }
 
         private void changeBanner(string text_to_display, Color color)
         {
+            actual_text_banner = this.displayEventTextBox.Text;
+            actual_color_banner = this.displayEventTextBox.BackColor;
+
             this.displayEventTextBox.Text = text_to_display;
             this.displayEventTextBox.BackColor = color;
+
+            this.Refresh();
+        }
+
+        private void resetSecureData()
+        {
+            this.id_textBox.Text = "";
+            this.password_textBox.Text = "";
+
+            this.id_textBox.Focus();
         }
 
         public void endPreviousSession()
         {
-            display_session_textBox.Text = "";
-            id_textBox.Text = "";
-            password_textBox.Text = "";
+            this.display_session_textBox.BackColor = DefaultBackColor;
+            this.display_session_textBox.Text = "";
 
+            this.Refresh();
+        }
+
+        public void startSession(string session_info)
+        {
+            resetSecureData();
+
+            this.display_session_textBox.BackColor = Color.LightGreen;
+            this.display_session_textBox.Text = session_info;
+
+            this.Refresh();
         }
 
 
         private void disconnection_button_Click(object sender, EventArgs e)
         {
             SecurityManager.disconnection();
+
+            resetSecureData();
             endPreviousSession();
+        }
+
+        private void textbox_password_KeyDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode ==  Keys.Enter)
+            {
+                connexion_button.PerformClick();
+            }
         }
 
 
@@ -261,19 +309,19 @@ public partial class MainForm : Form
 
             if (SecurityManager.setConnection(id_textBox.Text, password) == Definition.NO_ERROR_INT_VALUE)
             {
-                MessageBox.Show("Bienvenu " + SecurityManager.getFormatedSessionInfo());
-            }else
+                startSession(SecurityManager.getFormatedSessionInfo());
+            }
+            else
             {
+                endPreviousSession();
                 MessageBox.Show("Vous n'avez pas les droits nécessaire pour accéder à cette application");
             }
+
 
             if (password != null)
             {
                 password.Dispose();
             }
-
-            endPreviousSession();
-            display_session_textBox.Text = SecurityManager.getFormatedSessionInfo();
         }
 
 
@@ -282,7 +330,6 @@ public partial class MainForm : Form
         private void submenuItem_Click(object sender, EventArgs e)
         {
             ToolStripMenuItem clicked_menu_item = sender as ToolStripMenuItem;
-
             if (clicked_menu_item.Name != "nomDeDomainDuServerSQL")
             { /*In fact if the user want to change the domaine name of the sql server he could not anymore connect to the database
                *because the server name has changed (and users need to access database when they try to set a connection with the database
@@ -305,10 +352,12 @@ public partial class MainForm : Form
                 /*----------------------------------  Update  ---------------------------------- */
                 case "rafraichirLaBaseDeDonnées":
                     {
+                        changeBanner("Mise à jour de la base de données à partir d'un fichier système"+Environment.NewLine +"Veuillez patienter...", Color.DarkOrange);
+
                         string message;
                         if (Tools.readStudentsStateFile() == Definition.NO_ERROR_INT_VALUE)
                         {
-                            message = "Mis à jour effectuée";
+                            message = "Mise à jour effectuée";
                         }
                         else
                         {
@@ -316,11 +365,9 @@ public partial class MainForm : Form
                                     + "Vérifier que le fichier n'a pas utilisé par un autre processus "
                                     + "et que les paramètres enregistrés sont valides";
                         }
-
                         MessageBox.Show(message);
-
                     }
-                    break;
+                        break;
 
                 case "purgerLaBaseDeDonnées":
                     {
@@ -331,6 +378,7 @@ public partial class MainForm : Form
                         if (MessageBox.Show(body, title, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         // user clicked yes
                         {
+                            changeBanner("Purge de la base de données" + Environment.NewLine + "Veuillez patienter...", Color.DarkOrange);
                             //send mail to notice that the database has been clean
                             string mail_title = "Purge de la base de données";
                             string mail_body = "L'agent " + SecurityManager.getFormatedSessionInfo() + " vient d'ordonner la purge de la base de données. "
@@ -511,6 +559,8 @@ public partial class MainForm : Form
                     break;
                 
             }
+
+            bannerToPreviousState();
         }
 
         private void aideToolStripMenuItem_Click(object sender, EventArgs e)//help button

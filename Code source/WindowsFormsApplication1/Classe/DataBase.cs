@@ -97,7 +97,8 @@ class DataBase
     private const int DATABASE_NOT_OPENED_VALUE = -1;
     private const int DELETE_VALUE = Definition.DELETE_VALUE_DATABASE;
     private const int DO_NOT_DELETE_VALUE = Definition.DO_NOT_DELETE_VALUE_DATABASE;
-    private const int MAXIMUN_NUMBER_OF_RETRIES_SQL_REQUEST = 10;
+    private const int MAXIMUN_NUMBER_OF_RETRIES_SQL_REQUEST = 5;
+
 
 
     private SqlConnection openDataBase()
@@ -150,52 +151,67 @@ class DataBase
          * Since the following script will be used multpile time we use it as a function to avoid rewrite the same script
         */
 
+        SqlCommand cmd = new SqlCommand();
+        cmd.CommandType = CommandType.Text;
+        cmd.CommandText = request; //set request
+
+        /*If the request contains parameters then the list parameters is different from that default value which is null
+            * Then for all parameters in that list we associate te value to the sql command
+        */
+        if (parameters != null)
+        {
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                cmd.Parameters.AddWithValue(parameters[i], value[i]);//link parameters string with its value
+            }
+        }
+
         for (int number_of_retries = 0; number_of_retries < MAXIMUN_NUMBER_OF_RETRIES_SQL_REQUEST; number_of_retries++)
         {
-            SqlCommand cmd = new SqlCommand();
-
             try
             {
                 cmd.Connection = connection_database;
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText = request; //set request
-
-                /*If the request contains parameters then the list parameters is different from that default value which is null
-                    * Then for all parameters in that list we associate te value to the sql command
-                */
-                if (parameters != null)
-                {
-                    for (int i = 0; i < parameters.Count; i++)
-                    {
-                        cmd.Parameters.AddWithValue(parameters[i], value[i]);//link parameters string with its value
-                    }
-                }
-
-
+                
                 return cmd.ExecuteReader();//execute the sql command
-
             }
             catch (SqlException e_sql)
             {
                 /*Retry the request if the exeption is retriable*/
                 if (canRetry(e_sql))
                 {
-                    if (connection_database != null)
+                    if ( (connection_database != null) && (connection_database.State != ConnectionState.Closed) )
                     {
                         connection_database.Close();//close connexion
-                        connection_database = openDataBase();//open new connexion
                     }
+                    connection_database = openDataBase();//open new connexion
 
                     continue;
                 }
+
+                Error.details = "Requête non valide : " + request + "\n\n" + e_sql;
+                Error.error = "CERTDB";
+                break;
             }
             catch (Exception e)
             {
                 Error.details = "Requête non valide : " + request + "\n\n" + e;
                 Error.error = "CERTDB";
-                return null;
+                break;
             }
+
         }
+
+        if ( (connection_database == null) || (connection_database.State != ConnectionState.Open) )
+        {
+            connection_database = openDataBase();//close connexion
+        }
+
+        /* at the end of the function, if we reach the end of the loop, the connection is closed
+         * But we need to keep an open connection at the end of the function because that connection will be use
+         * in the rest of the master function (the function which call that one)
+         * As all object is passed as reference (and not as copy) and as an SqlConnection is an object, when we modify
+         * the object in that function, we modify the object into the master function
+        */
 
         return null;
     }
@@ -211,27 +227,29 @@ class DataBase
          * 
          * Since the following script will be used multpile time we use it as a function to avoid rewrite the same script
         */
+        SqlCommand cmd = new SqlCommand();
+
         for (int number_of_retries = 0; number_of_retries < MAXIMUN_NUMBER_OF_RETRIES_SQL_REQUEST; number_of_retries++)
         {
             SqlConnection connection_database = openDataBase();
+            cmd.CommandType = CommandType.Text;
+            cmd.CommandText = request; //set request
+
+            /*If the request contains parameters then the list parameters is different from that default value which is null
+             * Then for all parameters in that list we associate te value to the sql command
+            */
+            if (parameters != null)
+            {
+                for (int i = 0; i < parameters.Count; i++)
+                {
+                    cmd.Parameters.AddWithValue(parameters[i], value[i]);//link parameters string with its value
+                }
+            }
 
             try
             {
-                SqlCommand cmd = new SqlCommand();
-                cmd.Connection = connection_database;
-                cmd.CommandType = CommandType.Text;
-                cmd.CommandText = request; //set request
 
-                /*If the request contains parameters then the list parameters is different from that default value which is null
-                 * Then for all parameters in that list we associate te value to the sql command
-                */
-                if (parameters != null)
-                {
-                    for (int i = 0; i < parameters.Count; i++)
-                    {
-                        cmd.Parameters.AddWithValue(parameters[i], value[i]);//link parameters string with its value
-                    }
-                }
+                cmd.Connection = connection_database;
 
                 cmd.ExecuteNonQuery();
 
@@ -256,8 +274,11 @@ class DataBase
                 Error.details = "La requête suivante n'a pas pu être effectuée : " + request + "\n\n\n" + e;
                 Error.error = "CERTDB";
             }
+            finally
+            {
 
-            connection_database.Close();
+                connection_database.Close();
+            }
         }
         return Definition.ERROR_INT_VALUE;
 
@@ -572,20 +593,54 @@ class DataBase
 
     }
 
-    public int updateStudentTable(string last_name, string first_name, string division, int sex, int[] half_board_days)
+    public int updateStudentTable(List<StudentData> list)
     {
-        SqlConnection connection_database = openDataBase();
+        /*In fact openning and closing the database mutiple times in a short period makes SQL server crashe
+         * So to avoid that problem, we gather students as medium block (for exemple, we split the file that contains student informations
+         * into small pieces of 100 students) in order to use the same connection string for that block (then close the database)
+         * In orther word, we open once the database to insert all the student of a block (for example 100 student at onceà, then close the database 
+         * and start again
+         * 
+         * We don't want to let open the database while inserting all the student of the file, because the number of student could be important
+         * and keep the database opened is not a good idea
+        */
+        SqlConnection connection_database;
+        int res;
+
+        connection_database = openDataBase();
+        res = Definition.NO_ERROR_INT_VALUE;
+
+        foreach (StudentData student in list)
+        {
+            res = updateSingleStudentInTable(connection_database, student.lastName, student.firstName, student.division, student.sex, student.halfBoardDays);
+            if(res != Definition.NO_ERROR_INT_VALUE)
+            {
+                break;
+            }
+        }
+
+        closeDataBase(connection_database);
+
+        return res;
+    }
+
+    public int updateSingleStudentInTable(SqlConnection connection_database, string last_name, string first_name, string division, int sex, int[] half_board_days)
+    {
+
+        //SqlConnection connection_database = openDataBase();
         string date = Tools.dateTimeToString(DateTime.Now);
 
         string request = "SELECT E.Id_eleve FROM TABLE_ELEVES AS E "
             + "JOIN TABLE_CLASSES AS C ON C.Classe=@division AND C.Id_classe = E.Id_classe AND E.Nom=@last_name AND E.Prenom=@first_name AND E.Sexe=@sex AND Supprimer=@do_not_delete_value ";
 
         SqlDataReader sql_reader = executeReaderRequest(connection_database, request,
-                    new List<string>(new string[] { "@last_name", "@first_name", "@division", "@sex", "@half_board_days", "@do_not_delete_value" }),
-                    new List<object>(new object[] { last_name, first_name, division, sex, Tools.arrayToText(half_board_days), DO_NOT_DELETE_VALUE}));
+                    new List<string>(new string[] { "@last_name", "@first_name", "@division", "@sex", "@do_not_delete_value" }),
+                    new List<object>(new object[] { last_name, first_name, division, sex, DO_NOT_DELETE_VALUE }));
 
+        // last_name, first_name, division, sex, DO_NOT_DELETE_VALUE
         try
         {
+            
             if (sql_reader != null)
             {
                 if (sql_reader.HasRows)
@@ -643,11 +698,7 @@ class DataBase
             Error.error = "CERTDB";
 
             return Definition.ERROR_INT_VALUE;
-        }finally
-        {
-            closeDataBase(connection_database);
         }
-
     }
 
 

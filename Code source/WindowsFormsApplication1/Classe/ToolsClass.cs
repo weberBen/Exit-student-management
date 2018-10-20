@@ -163,9 +163,6 @@ namespace ToolsClass
     {
         /*Class is used to saved all kind of usefull method that are not relative to a specific namespace*/
 
-        private static DataBase database = new DataBase();
-
-
         public static string getOpenDialogFilter(string[] valid_formats)
         {
             /* When user have to choose a file, we open a file selector
@@ -868,34 +865,66 @@ namespace ToolsClass
         public static int readStudentsStateFile()
         {
             ParmsStudentsStateFile parms = Settings.StudentsStateFileParameters;
-
             try
             {
+                DataBase database = new DataBase();
+
                 string path_to_file = Definition.PATH_TO_FOLDER_DOCUMENT + Settings.StudentSateFileName;
+                int count;
+                int res;
+                string line = "";
+                string[] values;
+                List<StudentData> list_student = new List<StudentData>();
+                StudentData student = new StudentData();
+
                 using (var reader = new StreamReader(path_to_file, Encoding.GetEncoding("iso-8859-1")))
                 {
                     reader.ReadLine(); //drop out the first line of the file which is made for description
+
+                    count = 1;
+                    student.toDefault();
                     while (!reader.EndOfStream)
                     {
-                        var line = reader.ReadLine();
-                        var values = line.Split(Definition.CSV_COLUMN_SEPARATOR);
+                        line = reader.ReadLine();
+                        values = line.Split(Definition.CSV_COLUMN_SEPARATOR);
 
-                        int res = database.updateStudentTable(
-                                   values[parms.lastNameIndex], //Last name (string)
-                                   values[parms.firstNameIndex],// First name (string)
-                                   values[parms.divisionIndex], // division (string)
-                                   Tools.SexIntFromString(values[parms.sexIndex], parms.femaleShortname), //sex (int)
-                                   Tools.getNumericHalfBoardDaysFromString(values[parms.halfBoardDaysIndex]));//half-board regime (string)
 
-                        if (res == Definition.ERROR_INT_VALUE)
+                        if (count%100 == 0)//we save student into the database block of n students by block of n students at once
                         {
-                            return Definition.ERROR_INT_VALUE;
+                            res = database.updateStudentTable(list_student);
+                            if(res != Definition.NO_ERROR_INT_VALUE)
+                            {
+                                Error.details = "Ligne du fichier correspondante : " + line;
+                                Error.error = "CASITDB";
+                                return res;
+                            }
+                            list_student.Clear();
+                            count = 1;
                         }
 
+                        student.toDefault();
+                        student.lastName = values[parms.lastNameIndex];//Last name (string)
+                        student.firstName = values[parms.firstNameIndex];// First name (string)
+                        student.division = values[parms.divisionIndex]; // division (string)
+                        student.sex = Tools.SexIntFromString(values[parms.sexIndex], parms.femaleShortname); //sex (int)
+                        student.halfBoardDays = Tools.getNumericHalfBoardDaysFromString(values[parms.halfBoardDaysIndex]); //half-board regime (string)
 
+                        list_student.Add(student);
+
+                        count++;
+                    }
+
+                    if (list_student.Count != 0)//we save student into the database block of 200 students by block of 200 students at once
+                    {
+                        res = database.updateStudentTable(list_student);
+                        if (res != Definition.NO_ERROR_INT_VALUE)
+                        {
+                            Error.details = "Ligne du fichier correspondante : " + line;
+                            Error.error = "CASITDB";
+                            return res;
+                        }
                     }
                 }
-
                 return Definition.NO_ERROR_INT_VALUE;
 
             }
@@ -1370,8 +1399,6 @@ namespace ToolsClass
          * So all that kind of informations are stored inside that class and used to get or change value in the XML value
         */
 
-        private static DataBase database = new DataBase();
-
         private const string XML_ATTRIBUTE_VALUE_IP = "Ip_server";
         //attribute of the corresponding XML element for ip adress : <field name="Ip_server" Ip_server=""></field>
         private const string XML_ATTRIBUTE_VALUE_PORT = "Port_server";
@@ -1684,11 +1711,10 @@ namespace ToolsClass
 
         public static Tools.ParmsStudentsStateFile StudentsStateFileParameters
         {
-
+            
             get
             {
                 Tools.ParmsStudentsStateFile parms = new Tools.ParmsStudentsStateFile();
-
                 List<string> attribute_element_list = new List<string>(new string[] {XML_ATTRIBUTE_VALUE_COLUMN_LAST_NAME,
                 XML_ATTRIBUTE_VALUE_COLUMN_FIRST_NAME, XML_ATTRIBUTE_VALUE_COLUMN_DIVISION,XML_ATTRIBUTE_VALUE_COLUMN_SEX,
                 XML_ATTRIBUTE_VALUE_COLUMN_HALF_BOARD_DAYS,XML_ATTRIBUTE_VALUE_FEMALE_STUDENTS_STATE_FILE,XML_ATTRIBUTE_VALUE_MALE_STUDENTS_STATE_FILE,
@@ -1717,9 +1743,16 @@ namespace ToolsClass
                     parms.fridayShortname = elements[11];
                     parms.saturdayShortname = elements[12];
                     parms.sundayShortname = elements[13];
-                    parms.separatorDays = char.Parse(elements[13]);
+                    try
+                    {
+                        parms.separatorDays = (char)Int32.Parse(elements[14]);
+                    }catch
+                    {
+                        parms.separatorDays = ' ';
+                    }
 
-                }catch
+                }
+                catch(Exception e)
                 {
                     parms.toDefault();
                 }
@@ -1742,7 +1775,6 @@ namespace ToolsClass
             * Sex of student are represented in a specific format decrypted by "shortname_female" and "shortname_male"
             * (for example shortname_female="F" and shortname_male="M")
            */
-
                 List<string> attribute_element_list = new List<string>(new string[] {XML_ATTRIBUTE_VALUE_COLUMN_LAST_NAME,
                 XML_ATTRIBUTE_VALUE_COLUMN_FIRST_NAME, XML_ATTRIBUTE_VALUE_COLUMN_DIVISION,XML_ATTRIBUTE_VALUE_COLUMN_SEX,
                 XML_ATTRIBUTE_VALUE_COLUMN_HALF_BOARD_DAYS,XML_ATTRIBUTE_VALUE_FEMALE_STUDENTS_STATE_FILE,XML_ATTRIBUTE_VALUE_MALE_STUDENTS_STATE_FILE,
@@ -2100,14 +2132,14 @@ namespace ToolsClass
         }
 
 
-        public static void changeStudentStateFile(string path_new_file)
+        public static int changeStudentStateFile(string path_new_file)
         {
             string file_name = Definition.NAME_STUDENTS_STATE_FILE + Path.GetExtension(path_new_file);
             StudentSateFileName = file_name;
 
             Tools.copyFile(path_new_file, Definition.PATH_TO_FOLDER_DOCUMENT + file_name);
 
-            Tools.readStudentsStateFile(); //refresh the database
+            return Tools.readStudentsStateFile(); //refresh the database
         }
 
 
@@ -2122,7 +2154,7 @@ namespace ToolsClass
 
             Tools.copyFile(path_new_photo, Definition.PATH_TO_FOLDER_STUDENTS_PUBLIC_PHOTOS +  formated_photo_name + photo_extension);
 
-
+            DataBase database = new DataBase();
             database.updateStudentModificationTime(student_table_index);
             database.writeToRegiter(Definition.TYPE_OF_STUDENT_TABLE, student_table_index, SecurityManager.getConnectedAgentTableIndex(), 
                 Definition.MODIFICATION_STUDENT_PHOTO_MESSAGE);

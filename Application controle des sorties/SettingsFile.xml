@@ -2,7 +2,7 @@
 <Settings>
   <field name="Ip_server" Ip_server=""></field>
   <field name="Port_server" Port_server=""></field>
-  <field name="Sql_server_domain_name" Sql_server_domain_name=""></field>
+  <field name="Sql_server_domain_name" Sql_server_domain_name="(LocalDB)\MSSQLLocalDB"></field>
   <field name="Path_url_acess_file" Path_url_acess_file=""></field>
   <field name="School_name" School_name=""></field>
   <field name="Error_audio_name" Error_audio_name="error_audio.mp3"></field>

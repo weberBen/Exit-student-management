@@ -311,7 +311,7 @@
             this.sun_textBox.Location = new System.Drawing.Point(193, 200);
             this.sun_textBox.Name = "sun_textBox";
             this.sun_textBox.Size = new System.Drawing.Size(49, 23);
-            this.sun_textBox.TabIndex = 26;
+            this.sun_textBox.TabIndex = 23;
             // 
             // textBox18
             // 
