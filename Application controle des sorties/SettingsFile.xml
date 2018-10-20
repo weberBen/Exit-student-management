@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Settings>
+  <field name="Ip_server" Ip_server=""></field>
+  <field name="Port_server" Port_server=""></field>
+  <field name="Sql_server_domain_name" Sql_server_domain_name="(LocalDB)\MSSQLLocalDB"></field>
+  <field name="Path_url_acess_file" Path_url_acess_file=""></field>
+  <field name="School_name" School_name=""></field>
+  <field name="Error_audio_name" Error_audio_name="error_audio.mp3"></field>
+  <field name="Student_state_file" Student_state_file="regime_students.csv"></field>
+  <div name="Data_connexion_website">
+    <item name="Id"></item>
+    <item name="Password"></item>
+  </div>
+  <div name="Exit_ban_reasons_list"></div>
+  <div name="Punishment_words_list"></div>
+  <div name="List_correspondance_columns_state_student_file">
+    <item name="Last_name"></item>
+    <item name="First_name"></item>
+    <item name="Division"></item>
+    <item name="Sex"></item>
+    <item name="Half_board_days"></item>
+    <item name="Female"></item>
+    <item name="Male"></item>
+    <item name="Mon"></item>
+    <item name="Tue"></item>
+    <item name="Wed"></item>
+    <item name="Thu"></item>
+    <item name="Fri"></item>
+    <item name="Sat"></item>
+    <item name="Sun"></item>
+    <item name="Separator_days"></item>
+  </div>
+  <div name="Student_photo_parms">
+    <item name="Order_element"></item>
+    <item name="Format_element"></item>
+    <item name="Separator"></item>
+  </div>
+  <div name="School_days"></div>
+  <field name="Lunch_time" Lunch_time=""></field>
+  <div name="Study_time"></div>
+  <div name="List_parameters_for_mails_sender">
+    <item name="Mail_adress"></item>
+    <item name="Password"></item>
+    <item name="SMTP_sever"></item>
+    <item name="SMTP_port"></item>
+    <item name="Before_message"></item>
+    <item name="After_message"></item>
+  </div>
+  <div name="Mails_list"></div>
+  <field name="Color_non_closed_punishment" Color_non_closed_punishment=""></field>
+  <field name="Length_exit_break" Length_exit_break=""></field>
+  <field name="Length_rfid_id" Length_rfid_id=""></field>
+  <field name="Date_last_suppression_from_database" Date_last_suppression_from_database=""></field>
+</Settings>
