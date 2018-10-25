@@ -58,8 +58,7 @@ public partial class MainForm : Form
         private Color CUSTOM_GREEN = Color.FromArgb(179, 255, 179);
         private Color CUSTOM_ORANGE = Color.FromArgb(255, 140, 26);
         private static System.Timers.Timer timer_collect_data;
-        private const int TIMER_BEFORE_COLLECT_DATA_MIN = 60;//minutes
-        private const int TIMER_INTERVAL_COLLECT_DATE = TIMER_BEFORE_COLLECT_DATA_MIN * 60000;//ms
+        
 
         private string actual_text_banner;
         private Color actual_color_banner;
@@ -183,7 +182,7 @@ public partial class MainForm : Form
 
             //set timer
             timer_collect_data = new System.Timers.Timer();
-            timer_collect_data.Interval = TIMER_INTERVAL_COLLECT_DATE;
+            timer_collect_data.Interval = Definition.TIMER_INTERVAL_COLLECT_DATE;
             timer_collect_data.Elapsed += new ElapsedEventHandler(collectData); ; //event timer tick
             timer_collect_data.Start();
 
@@ -207,6 +206,9 @@ public partial class MainForm : Form
              * The process must be repeat frequently
             */
 
+            SecurityManager.maintenance();//do all the needed cleaning of objects linked to the client-server connection
+
+            //collect online data to refresh the database
             ExtractDataFromWebSite.UpdateStudentInfoFromOnlineDataBase CollectData = new ExtractDataFromWebSite.UpdateStudentInfoFromOnlineDataBase();
             if(CollectData.process_error)//an error occurs during the collect of the data
             {
@@ -563,6 +565,7 @@ public partial class MainForm : Form
             bannerToPreviousState();
         }
 
+
         private void aideToolStripMenuItem_Click(object sender, EventArgs e)//help button
         {
             //open folder in the file exploxer
@@ -574,6 +577,7 @@ public partial class MainForm : Form
                 MessageBox.Show("Impossible d'atteindre le dossier : " + Definition.PATH_TO_FOLDER_HELP);
             }
         }
+
     }
 
     

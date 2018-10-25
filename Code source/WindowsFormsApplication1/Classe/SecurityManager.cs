@@ -91,8 +91,8 @@ static class SecurityManager
     private static Agent connected_agent;
 
     private const int NUMBER_CONNECTION_ATTEMPS_ALLOWED = 3;
-    public const int TIMEOUT_ONLINE_SESSION_MIN = 30;//min
-    private const int TIME_BANNED_SESSION_MIN = 120;//min
+   /* 30*/ public const int TIMEOUT_ONLINE_SESSION_MIN = 1;//min
+    /* 120 */private const int TIME_BANNED_SESSION_MIN = 1;//min
     private static List<Agent> client_list = new List<Agent>();
     private static List<Agent> unknown_agent_list = new List<Agent>(); 
     private static List<Agent> banned_ip_adress_list = new List<Agent>();
@@ -389,7 +389,10 @@ static class SecurityManager
 
 
 
-
+    public static void maintenance()
+    {
+        cleanClientList();
+    }
 
 
     /*---------------------------------------------------- Physical connexion ------------------------------------------------*/
@@ -539,6 +542,29 @@ static class SecurityManager
 
 
     /*---------------------------------------------------- Online connexion ------------------------------------------------*/
+    private static void cleanClientList()
+    {
+        /* When an client try to connect to the server we search its information into the client list. If he was previously into the client list, we update the information
+         * else we add the client into the database. Thus, all the profile are loaded into the client list until the agent try to access to the server again.
+         * In other words, the size of the client could increase exponentially at the end of the day if the don't remove all the profile that are not used anymore.
+         * 
+         * This function loop into the client list and find the profiles that are no longer banned or the profiles that has been automatically disconnected
+         * to remove it from the database
+        */
+
+        Agent agent;
+        for (int i = 0; i < client_list.Count; i++)
+        {
+            agent = client_list[i];
+
+            if (updateBannedAgent(agent) || updateRegisteredAgent(agent, agent.sessionId))
+            {
+                //non used profile found
+                client_list.RemoveAt(i);
+            }
+        }
+    }
+
 
     public static Agent setOnlineConnection(string id, SecureString secure_given_password, string ip_adress)
     {
@@ -655,7 +681,6 @@ static class SecurityManager
             agent.toDefault();
         }
     }
-
 
     public static int getIndexAgentFromIpAdress(string ip_adress)
     {
@@ -898,6 +923,19 @@ static class SecurityManager
         return agent;
     }
 
+    private static bool updateBannedAgent(Agent agent)
+    {
+        /* return true is the agent is no longer banned
+         * else return false
+        */
+
+        if ( (agent.banned == true) && (getRestTimeSinceBanishment(agent.banishmentStartTime) < TimeSpan.FromMinutes(0)) )
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     private static bool changeBannedAgent(ref Agent agent)
     {
@@ -906,7 +944,7 @@ static class SecurityManager
          * 
          * If agent is removed return true, else false
         */
-        if ((agent.banned == true) && (getRestTimeSinceBanishment(agent.banishmentStartTime) < TimeSpan.FromMinutes(0)))
+        if(updateBannedAgent(agent))
         {//agent is no longer banned
             client_list.Remove(agent);
 
@@ -935,19 +973,49 @@ static class SecurityManager
         return TimeSpan.FromMinutes(TIME_BANNED_SESSION_MIN).Subtract(DateTime.Now.Subtract(banishment_dateTime));
     }
 
+    private static bool updateRegisteredAgent(Agent agent, string session_id)
+    {
+        /*return true if the agent is in the client_list but its expiration time of the session
+          else return false
+         */
+
+        /*If the agent has not been authentified*/
+        if (agent.tableId == -1)
+        {
+            if (DateTime.Now.Subtract(agent.lastConnectionTime) >= TimeSpan.FromMinutes(TIMEOUT_ONLINE_SESSION_MIN))
+            {
+                /*If the last connection between the client and the server is older than the expiration time of the session
+                 we reset the profil
+                 Notice that in that way the number of attemp will be reset if the agent wait enough time (expiration time of the session)
+                */
+
+                return true;
+            }
+
+        }
+        else
+        {
+            /*If the agent has been authentified, if his session id matches to the saved one or if the session expired, we reset the profil*/
+            if ((DateTime.Now.Subtract(agent.lastConnectionTime) >= TimeSpan.FromMinutes(TIMEOUT_ONLINE_SESSION_MIN))
+                || ((agent.sessionId == null) || (agent.sessionId != session_id))
+               )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private static bool changeRegisteredAgent(ref Agent agent, string session_id)
     {
-        /*Check if the given agent is still connected (the session does not expire)
-         * If so we remove it from memory
+        /* Check if the given agent is still connected (the session does not expire)
+         * If he is no, we remove it from memory
          * 
          * If agent is removed return true, else false
         */
 
-        if ((agent.tableId != -1)
-            && (agent.numberOfConnectionAttemps == 0)
-            && (DateTime.Now.Subtract(agent.lastConnectionTime) >= TimeSpan.FromMinutes(TIMEOUT_ONLINE_SESSION_MIN)
-                    || (agent.sessionId == null) || (agent.sessionId != session_id)))
+        if (updateRegisteredAgent(agent, session_id))
         {
             /* If agent has been connected but the session expired (or user is connected to the same computer with an other windows sessions)
              * 

@@ -89,10 +89,11 @@ class DataBase
 {
     private const string DATABASE_NAME = "Database_Students_Management.mdf";
     private static string PATH_TO_DATABASE = Definition.CURRENT_DIRECTORY + Definition.SEPARATOR + DATABASE_NAME;
-    private string connexionDataBaseString = @"Data Source ="+ Definition.SQL_SERVER_DOMAIN_NAME + ";" +
+    private string connexionDataBaseString = @"Data Source =" + Definition.SQL_SERVER_DOMAIN_NAME + ";" +
      @"AttachDbFilename =" + PATH_TO_DATABASE + ";"
-        + "Integrated Security = True;"
-        + "MultipleActiveResultSets=True;";//use windows authentification
+        + "Integrated Security=True;"
+        + "MultipleActiveResultSets=True;"
+        + "Connect Timeout=120;";
 
     private const int DATABASE_NOT_OPENED_VALUE = -1;
     private const int DELETE_VALUE = Definition.DELETE_VALUE_DATABASE;
@@ -101,7 +102,7 @@ class DataBase
 
 
 
-    private SqlConnection openDataBase()
+    public SqlConnection openDataBase()
     {
         SqlConnection connection_database = new SqlConnection(connexionDataBaseString);
         {
@@ -120,7 +121,7 @@ class DataBase
     }
 
 
-    private void closeDataBase(SqlConnection connection_database)
+    public void closeDataBase(SqlConnection connection_database)
     {
         try
         {
@@ -853,48 +854,72 @@ class DataBase
         return student;
     }
 
-    public List<StudentData> getAllStudent()
+
+    /*At the moment we will nedd to retrieve all the student from the database. Is too much ressource and time cosuming to load all the 
+     * student from the database to the RAM (in a list for example). So we have to open the database, start the request and keep the reader alive
+     * (which can be seen as a pointer that show a small piece of the database loaded in the RAM).
+     * The following methodes works on the same principle as the reading of a file in C :
+     *  - a function to start a pointer to the first piece of the file loaded into the RAM (here open the database and start the request)
+     *  - a function to go the next array of bytes (here read the next result from the request)
+     *  - a function to close the file/free all ressources (here close the database)
+   */
+    private SqlConnection local_connection_database = null;//connection to the database
+    private SqlDataReader local_sql_reader = null; //pointer to the actual result
+    public void startStudentEnumeration()
     {
-
-        SqlConnection connection_database = openDataBase();
-
-        List<StudentData> list_res = new List<StudentData>();
+        //open the database
+        local_connection_database = openDataBase();
+    }
+    public void endStudentEnumeration()
+    {
+        //close the database
+        closeDataBase(local_connection_database);
+    }
+    public bool getNextStudentFromEnumeration(ref StudentData student)
+    {
+        /* get the next student into the database
+         * All the result will be loaded into the object StudentData given as reference
+         * If we reach the "end" of the database the function close the reader, then return false
+         * else the function return true
+        */
+        student.toDefault();
 
         try
         {
-            string request = "SELECT E.Id_eleve, E.Nom,E.Prenom,C.Classe,E.Sexe,E.DemiPension,E.Id_RFID FROM TABLE_ELEVES AS E "
-                + "JOIN TABLE_CLASSES AS C ON E.Id_classe= C.Id_classe AND E.Supprimer=@do_not_delete_value";
-            SqlDataReader sql_reader = executeReaderRequest(connection_database, request,
-                new List<string>(new string[] { "@do_not_delete_value" }),
-                new List<object>(new object[] { DO_NOT_DELETE_VALUE }));
-
-            if (sql_reader != null)
+            if (local_sql_reader == null)
             {
 
-
-                if (sql_reader.HasRows)
-                {
-                    StudentData student = new StudentData();
-                    student.toDefault();
-
-                    sql_reader.Read();
-                    student.tableId = sql_reader.GetInt32(0);
-                    student.lastName = sql_reader.GetString(1);
-                    student.firstName = sql_reader.GetString(2);
-                    student.division = sql_reader.GetString(3);
-                    student.sex = sql_reader.GetInt32(4);
-                    student.halfBoardDays = Tools.textToArray<int>(sql_reader.GetString(5));
-                    student.idRFID = sql_reader.GetString(6);
-
-                    list_res.Add(student);
-                }
-
+                string request = "SELECT E.Id_eleve, E.Nom,E.Prenom,C.Classe,E.Sexe,E.DemiPension,E.Id_RFID FROM TABLE_ELEVES AS E "
+                + "JOIN TABLE_CLASSES AS C ON E.Id_classe= C.Id_classe AND E.Supprimer=@do_not_delete_value";
+                local_sql_reader = executeReaderRequest(local_connection_database, request,
+                    new List<string>(new string[] { "@do_not_delete_value" }),
+                    new List<object>(new object[] { DO_NOT_DELETE_VALUE }));
             }
 
-        }catch { }
-        closeDataBase(connection_database);
 
-        return list_res;
+            if (local_sql_reader != null)
+            {
+                if (!local_sql_reader.Read())
+                {
+                    local_sql_reader.Close();
+                    local_sql_reader = null;
+                    return false;
+                }
+
+                student.tableId = local_sql_reader.GetInt32(0);
+                student.lastName = local_sql_reader.GetString(1);
+                student.firstName = local_sql_reader.GetString(2);
+                student.division = local_sql_reader.GetString(3);
+                student.sex = local_sql_reader.GetInt32(4);
+                student.halfBoardDays = Tools.textToArray<int>(local_sql_reader.GetString(5));
+                student.idRFID = local_sql_reader.GetString(6);
+            }
+
+        }
+        catch { }
+
+
+        return true;
     }
 
 

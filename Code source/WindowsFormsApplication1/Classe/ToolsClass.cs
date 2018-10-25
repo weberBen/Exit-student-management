@@ -156,6 +156,9 @@ namespace ToolsClass
         public const int TEXT_FORMAT_LOWER_CASE = 1;
         public const int TEXT_FORMAT_NORMALIZE = 2;
 
+        public const int TIMER_BEFORE_COLLECT_DATA_MIN = 60;//minutes
+        public const int TIMER_INTERVAL_COLLECT_DATE = TIMER_BEFORE_COLLECT_DATA_MIN * 60000;//ms
+
     }
 
 
@@ -1743,13 +1746,7 @@ namespace ToolsClass
                     parms.fridayShortname = elements[11];
                     parms.saturdayShortname = elements[12];
                     parms.sundayShortname = elements[13];
-                    try
-                    {
-                        parms.separatorDays = (char)Int32.Parse(elements[14]);
-                    }catch
-                    {
-                        parms.separatorDays = ' ';
-                    }
+                    parms.separatorDays = (char)Int32.Parse(elements[14]);
 
                 }
                 catch(Exception e)
@@ -1809,7 +1806,7 @@ namespace ToolsClass
                 {
                     parmsStudentPhoto.ElementsOrder = Tools.textToArray<int>(text_list[0]);
                     parmsStudentPhoto.ElementsFormat = Tools.textToArray<int>(text_list[1]);
-                    parmsStudentPhoto.separator = char.Parse(text_list[2]);
+                    parmsStudentPhoto.separator = (char)(Int32.Parse(text_list[2]));
 
                 }catch
                 {
@@ -1828,7 +1825,7 @@ namespace ToolsClass
                 List<string> attribute_element_list = new List<string>(new string[] {XML_ATTRIBUTE_VALUE_ORDER_ELEMENTS_STUDENT_PHOTO,
                 XML_ATTRIBUTE_VALUE_FORMAT_ELEMENTS_STUDENT_PHOTO, XML_ATTRIBUTE_VALUE_SEPARATOR_STUDENT_PHOTO });
 
-                List<string> element = new List<string>(new string[] { Tools.arrayToText(value.ElementsOrder), Tools.arrayToText(value.ElementsFormat), "" + value.separator });
+                List<string> element = new List<string>(new string[] { Tools.arrayToText(value.ElementsOrder), Tools.arrayToText(value.ElementsFormat),  "" + (int)value.separator });
 
                 XmlHelper.changeXmlListElement(Definition.PATH_TO_TOOLS_FILE, Definition.SECTION_TAG_XML_FILE, Definition.ATTRIBUTE_ELEMENT_XML_FILE,
                                               XML_ATTRIBUTE_VALUE_LIST_PARMS_STUDENT_PHOTO, Definition.XML_TAG_FOR_ITEM,

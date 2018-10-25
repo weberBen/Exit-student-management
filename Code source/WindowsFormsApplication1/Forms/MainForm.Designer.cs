@@ -46,11 +46,11 @@
             this.formatNomDesPhotosÉtudiantes = new System.Windows.Forms.ToolStripMenuItem();
             this.fichierDétatsDesÉtudiants = new System.Windows.Forms.ToolStripMenuItem();
             this.duréeDeLaPauseAutorisantLesSorties = new System.Windows.Forms.ToolStripMenuItem();
-            this.motifsDinterdictionDeSortie = new System.Windows.Forms.ToolStripMenuItem();
             this.longueurIdentifiantRFID = new System.Windows.Forms.ToolStripMenuItem();
             this.gestionDesDonnéesÉlèves = new System.Windows.Forms.ToolStripMenuItem();
             this.SchoolLifeOffice = new System.Windows.Forms.ToolStripMenuItem();
             this.sonSortieNonAutorisé = new System.Windows.Forms.ToolStripMenuItem();
+            this.motifsDinterdictionDeSortie = new System.Windows.Forms.ToolStripMenuItem();
             this.appelationPunitionEnPrésence = new System.Windows.Forms.ToolStripMenuItem();
             this.couleurPunitionNonClôturée = new System.Windows.Forms.ToolStripMenuItem();
             this.aideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -241,7 +241,7 @@
             // motifsDinterdictionDeSortie
             // 
             this.motifsDinterdictionDeSortie.Name = "motifsDinterdictionDeSortie";
-            this.motifsDinterdictionDeSortie.Size = new System.Drawing.Size(277, 22);
+            this.motifsDinterdictionDeSortie.Size = new System.Drawing.Size(251, 22);
             this.motifsDinterdictionDeSortie.Text = "Motifs d\'interdiction de sortie";
             // 
             // appelationPunitionEnPrésence
