@@ -23,7 +23,7 @@ namespace ExtractDataFromWebSite
         //when all the process if finished set the value to false if there was no error, else set to true (by default true)
         public string message_to_send;
         public TimeSpan exit_break_timespan;
-        private int TIMEOUT_PROCESS_MINUTES = (int)0.8 * Definition.TIMER_INTERVAL_COLLECT_DATE;
+        private const int TIMEOUT_PROCESS_MINUTES = 60;
 
         public UpdateStudentInfoFromOnlineDataBase()
         {

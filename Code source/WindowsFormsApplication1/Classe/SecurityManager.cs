@@ -91,8 +91,8 @@ static class SecurityManager
     private static Agent connected_agent;
 
     private const int NUMBER_CONNECTION_ATTEMPS_ALLOWED = 3;
-   /* 30*/ public const int TIMEOUT_ONLINE_SESSION_MIN = 1;//min
-    /* 120 */private const int TIME_BANNED_SESSION_MIN = 1;//min
+    public const int TIMEOUT_ONLINE_SESSION_MIN = 30;//min
+    private const int TIME_BANNED_SESSION_MIN = 120;//min
     private static List<Agent> client_list = new List<Agent>();
     private static List<Agent> unknown_agent_list = new List<Agent>(); 
     private static List<Agent> banned_ip_adress_list = new List<Agent>();

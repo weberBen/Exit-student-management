@@ -873,6 +873,15 @@ class DataBase
     public void endStudentEnumeration()
     {
         //close the database
+        try
+        {
+            if ((local_sql_reader != null) && (!local_sql_reader.IsClosed))
+            {
+                local_sql_reader.Close();
+                local_sql_reader = null;
+            }
+        }catch { }
+
         closeDataBase(local_connection_database);
     }
     public bool getNextStudentFromEnumeration(ref StudentData student)
@@ -901,8 +910,12 @@ class DataBase
             {
                 if (!local_sql_reader.Read())
                 {
-                    local_sql_reader.Close();
-                    local_sql_reader = null;
+                    try
+                    {
+                        local_sql_reader.Close();
+                        local_sql_reader = null;
+                    }catch { }
+
                     return false;
                 }
 

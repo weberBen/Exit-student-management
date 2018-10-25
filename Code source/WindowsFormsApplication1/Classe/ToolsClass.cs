@@ -156,9 +156,6 @@ namespace ToolsClass
         public const int TEXT_FORMAT_LOWER_CASE = 1;
         public const int TEXT_FORMAT_NORMALIZE = 2;
 
-        public const int TIMER_BEFORE_COLLECT_DATA_MIN = 60;//minutes
-        public const int TIMER_INTERVAL_COLLECT_DATE = TIMER_BEFORE_COLLECT_DATA_MIN * 60000;//ms
-
     }
 
 
