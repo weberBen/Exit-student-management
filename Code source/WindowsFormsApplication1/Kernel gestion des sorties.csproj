@@ -138,7 +138,6 @@
     <Compile Include="Classe\DataProtection.cs" />
     <Compile Include="Classe\BrowserFeatureControl.cs" />
     <Compile Include="Classe\DataBase.cs" />
-    <Compile Include="Classe\ExtractDataFromWebSite.cs" />
     <Compile Include="Forms\SetingsMailsSender.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -58,7 +58,7 @@ public partial class MainForm : Form
         private Color CUSTOM_GREEN = Color.FromArgb(179, 255, 179);
         private Color CUSTOM_ORANGE = Color.FromArgb(255, 140, 26);
         private static System.Timers.Timer timer_collect_data = null;
-        
+        private const int TIMER_TIME_MINUTES = 1440; //24h
 
         private string actual_text_banner;
         private Color actual_color_banner;
@@ -112,7 +112,8 @@ public partial class MainForm : Form
 
             SecurityManager.setConnection("", null);
 
-            daily_tasks();
+            dailyTask();
+            startTimer();
 
             /*DELETE ----------------------------------------------------------------------------------------------------------------------------*/
             /*
@@ -162,9 +163,7 @@ public partial class MainForm : Form
                 short_secure_id.Dispose();
             /*DELETE ----------------------------------------------------------------------------------------------------------------------------*/
 
-            
         }
-
 
         private void form_OnClosing(Object sender, FormClosingEventArgs e)
         {
@@ -176,54 +175,21 @@ public partial class MainForm : Form
             t.Wait(TimeSpan.FromMilliseconds(TIME_OUT_VALUE));
         }
 
-        private void daily_tasks()
+
+        private void dailyTask()
         {
-            /*task that have to be made at the start of the app*/
-
-            DataBase database = new DataBase();
             DateTime date = ToolsClass.Settings.DateLastSuppressionFromDatabase;
-
-            database.purgeRegularExitsTable();//remove regular exit for all student
 
             //check if the database was not clean for a while
             if (date.Add(TimeSpan.FromDays(SecurityManager.TIME_BEFORE_SUPPRESSION_OF_DATA_FROM_DATABASE_DAYS)) < DateTime.Now)
             {
                 File.WriteAllText(Definition.PATH_TO_LOG_ERROR_FILE, ""); //reset file where error log were saved
+                DataBase database = new DataBase();
                 database.clearDatabase();
 
                 ToolsClass.Settings.DateLastSuppressionFromDatabase = DateTime.Now;
             }
-
-            startTimer();//start timer to collect online data
         }
-
-
-        private void collectData(object source, ElapsedEventArgs e)
-        {
-            /* Populate the database with onlide data about student
-             * The process must be repeat frequently
-            */
-            int day_of_the_week = (int)DateTime.Now.DayOfWeek;
-            if (ToolsClass.Settings.SchoolDays.LastIndexOf(day_of_the_week) != -1)//the current day is a school day
-            {
-                SecurityManager.maintenance();//do all the needed cleaning of objects linked to the client-server connection
-
-                //collect online data to refresh the database
-                ExtractDataFromWebSite.UpdateStudentInfoFromOnlineDataBase CollectData = new ExtractDataFromWebSite.UpdateStudentInfoFromOnlineDataBase();
-                if (CollectData.process_error)//an error occurs during the collect of the data
-                {
-                    string subject = "Erreur critique (collecte des données en ligne)";
-                    Tools.sendMail(subject, CollectData.message_to_send, ToolsClass.Settings.MailsList);
-                    //send information to all agent who wanted to be alerted
-                    Error.details = CollectData.message_to_send;
-                    Error.error = "EWCOD";
-                }
-            }
-
-            startTimer();
-            //restart the timer
-        }
-
 
         private void restartLocalServer()
         {
@@ -585,15 +551,9 @@ public partial class MainForm : Form
         {
             endTimer();//close timer if he was opened
 
-            int time = getTimeForTimerMinutes(DateTime.Now.TimeOfDay); //get the number of minutes to wait
-            if (time == -1)
-            {
-                return;
-            }
-
             timer_collect_data = new System.Timers.Timer();
-            timer_collect_data.Interval = time * 60000;//ms
-            timer_collect_data.Elapsed += new ElapsedEventHandler(collectData); ; //event timer tick
+            timer_collect_data.Interval = TIMER_TIME_MINUTES * 60000;//ms
+            timer_collect_data.Elapsed += new ElapsedEventHandler(timerHandler); ; //event timer tick
             timer_collect_data.Start();
         }
 
@@ -611,83 +571,10 @@ public partial class MainForm : Form
             catch { }
         }
 
-
-        private int getTimeForTimerMinutes(TimeSpan now)
+        private void timerHandler(object source, ElapsedEventArgs e)
         {
-            /*The function return the time (in minutes) that the app have to wait before starting a new process (to collect online data)*/
-
-            List<StudyTime> list_study_times = ToolsClass.Settings.StudyHours;
-            if (list_study_times.Count == 0)
-            {
-                return -1;
-            }
-
-
-            int i;
-            double timer_time;
-
-
-            i = 0;
-            while ((i < list_study_times.Count) && (now >= list_study_times[i].startTime))
-            {
-                i++;
-            }
-            /* At that step, we get the next timeslot where we need to start the process again
-             * For example :
-             *  |
-             *  |
-             *  |
-             *  | <- 7h00
-             *  |
-             *  | <- 8h00
-             *  |
-             *  | <- 9h00
-             *  
-             * If the current time is 6h30, then we need to start the process (which start when the timer end) at the first timeslot 7h00 - 8h00
-             * If the current time is 7h40, then we need to start the process between 8h00 and 9h00
-             * 
-             * In other words, the list of study time represent all the timeslot where students study (so where there is no student that need to go outside).
-             * Thus, we take advantage of that situation and we will update all the database when student don't need to go outside, when the app is not used
-             * At the start and the end of the timeslot, students will need to go outside.
-             * So, according to the current time we search the next time slot where we can update the database
-            */
-            if (i == list_study_times.Count)
-            {
-                /* If the current time is superior to the last study hour, then we have to wait until the next morning (until the first study hour
-                 * of the day)
-                 * For example, if the last study hour is 14h00 and the current time is 15h00 :
-                 * |
-                 * | <- 14h00
-                 * |
-                 * | <-15h00
-                 * |
-                 * |
-                 * | <- 00h00
-                 * |
-                 * |
-                 * | <- 08h00 (of the next day)
-                 * 
-                 * Then we have to wait until midnight and then until the first study hour
-                 * 
-                 * Notice that if the last study hour is after midnight, then we will break the loop with i=0
-                */
-                i = 0;
-                timer_time = (new TimeSpan(23, 59, 59)).Subtract(now).TotalMinutes + list_study_times[i].startTime.TotalMinutes;
-                // (23h59 - now) + (start_first_study_hour - 0h00)
-            }
-            else
-            {
-                //the current time is between two study hours
-                timer_time = list_study_times[i].startTime.Subtract(now).TotalMinutes;
-            }
-
-            timer_time += 0.5 * list_study_times[i].endTime.Subtract(list_study_times[i].startTime).TotalMinutes;
-
-            /* timer_time -> time_until_start_of_time_slot + 0.5*(end_time_slot - start_time_slot)
-             * We want to start the process at the middle of the next timeslot from now
-            */
-
-            return (int)timer_time;
+            dailyTask();
+            startTimer();
         }
     }
 
