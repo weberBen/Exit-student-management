@@ -596,6 +596,8 @@ static class SecurityManager
          * The banishment is not assiociate to the a windows session but to a computer
          * But when agent is registered he is from its windows session on a specific computer (and not only from the computer)
          * 
+         * This is the only function that can add a new user
+         * 
        */
 
         Agent agent = new Agent();
@@ -612,7 +614,7 @@ static class SecurityManager
          * But the needed amount of time will almost always overpass the maximun connection time of the databse
          * which will procude an error
         */
-        agent = database.getAgentByAuthentificationId(id);//could return an agent with error set to on 
+        agent = database.getAgentByAuthentificationId(id);//could return an agent with error set to true 
 
         if (agent.error)
         {//error from the server (not the fault of the client)
@@ -626,6 +628,16 @@ static class SecurityManager
         }
 
         int index = getIndexAgentFromIpAdress(ip_adress);
+        if (index == -1)//add new user
+        {
+            Agent temp_agent = new Agent();
+            temp_agent.toDefault();
+            
+            setEssentialParmsForAgent(ref temp_agent, ip_adress);
+            client_list.Add(temp_agent);
+            index = client_list.Count - 1;
+        }
+
 
         if (agent.tableId == -1)
         {//there is no corresponding agent into the database (wrong id or password or both)
@@ -657,7 +669,6 @@ static class SecurityManager
 
         client_list[index] = agent;
         //again index will never be out of range
-
         return agent;
 
     }
@@ -672,7 +683,8 @@ static class SecurityManager
         if (agent.tableId != -1)
         {
             /*If the client is in memory and registered
-             * because if a client who is not registered try to diconnect it will remove all his informations from server
+             * because if a client who is not registered try to diconnect it will remove all his informations from server 
+             * (and that's a problem if the user will be banned soon because he made too much attemps)
              * (even the number of attemps). In other words, it could be a way to avoid beeing banned after multiple failed
              * So to be disconnected client have to be registered
              * (at that step assume that session expiration has been cheked before)
@@ -693,6 +705,11 @@ static class SecurityManager
         while ((i < client_list.Count) && (client_list[i].ipAdress != ip_adress))
         {
             i++;
+        }
+
+        if(i==client_list.Count)
+        {
+            return -1;
         }
 
         return i;
@@ -883,17 +900,14 @@ static class SecurityManager
         /* That function update informations about saved agent into the list "client_list"
          * (for exemple figure out if the agent is disconnected, or not any more banned)
          * Then update that infomration into memory and return it
-         * 
-         * That function is the only one which can add client to memory
-         * and of course the order of instruction when call that function is important bacause all other function assume
-         * that the client has already been registered by that function (when the client made a request)
-         * 
         */
+
         Agent agent = new Agent();
         agent.toDefault();
+        setEssentialParmsForAgent(ref agent, ip_adress);
 
         int index = getIndexAgentFromIpAdress(ip_adress);
-        if (index != client_list.Count)
+        if (index != -1)
         {//if agent is already into memory
             agent = client_list[index];
 
@@ -913,13 +927,7 @@ static class SecurityManager
                 client_list[index] = agent;
             }
 
-        }
-        else
-        {//If the client made his first request to the server we need to save him in memory (into the list "client_list")
-            setEssentialParmsForAgent(ref agent, ip_adress);
-            client_list.Add(agent);
-        }
-
+        }//if the client is not registered we do nothing
         return agent;
     }
 

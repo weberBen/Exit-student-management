@@ -162,7 +162,6 @@ public partial class MainForm : Form
                 password.Dispose();
                 short_secure_id.Dispose();
             /*DELETE ----------------------------------------------------------------------------------------------------------------------------*/
-
         }
 
         private void form_OnClosing(Object sender, FormClosingEventArgs e)

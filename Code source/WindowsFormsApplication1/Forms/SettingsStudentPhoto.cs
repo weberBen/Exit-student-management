@@ -324,6 +324,5 @@ namespace WindowsFormsApplication1.Forms
         {
             this.Close();
         }
-
     }
 }

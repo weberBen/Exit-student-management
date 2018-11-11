@@ -42,13 +42,16 @@
             this.maj_radioButton_0 = new System.Windows.Forms.RadioButton();
             this.min_radioButton_0 = new System.Windows.Forms.RadioButton();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.normalize_radioButton_0 = new System.Windows.Forms.RadioButton();
             this.none_radioButton_0 = new System.Windows.Forms.RadioButton();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.normalize_radioButton_2 = new System.Windows.Forms.RadioButton();
             this.none_radioButton_2 = new System.Windows.Forms.RadioButton();
             this.maj_radioButton_2 = new System.Windows.Forms.RadioButton();
             this.min_radioButton_2 = new System.Windows.Forms.RadioButton();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.normalize_radioButton_1 = new System.Windows.Forms.RadioButton();
             this.none_radioButton_1 = new System.Windows.Forms.RadioButton();
             this.maj_radioButton_1 = new System.Windows.Forms.RadioButton();
             this.min_radioButton_1 = new System.Windows.Forms.RadioButton();
@@ -58,9 +61,6 @@
             this.visualisation_button = new System.Windows.Forms.Button();
             this.cancel_button = new System.Windows.Forms.Button();
             this.save_button = new System.Windows.Forms.Button();
-            this.normalize_radioButton_0 = new System.Windows.Forms.RadioButton();
-            this.normalize_radioButton_1 = new System.Windows.Forms.RadioButton();
-            this.normalize_radioButton_2 = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -202,6 +202,17 @@
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             // 
+            // normalize_radioButton_0
+            // 
+            this.normalize_radioButton_0.AutoSize = true;
+            this.normalize_radioButton_0.Location = new System.Drawing.Point(160, 14);
+            this.normalize_radioButton_0.Name = "normalize_radioButton_0";
+            this.normalize_radioButton_0.Size = new System.Drawing.Size(71, 17);
+            this.normalize_radioButton_0.TabIndex = 13;
+            this.normalize_radioButton_0.TabStop = true;
+            this.normalize_radioButton_0.Text = "Normalisé";
+            this.normalize_radioButton_0.UseVisualStyleBackColor = true;
+            // 
             // none_radioButton_0
             // 
             this.none_radioButton_0.AutoSize = true;
@@ -248,6 +259,17 @@
             this.groupBox3.TabIndex = 13;
             this.groupBox3.TabStop = false;
             // 
+            // normalize_radioButton_2
+            // 
+            this.normalize_radioButton_2.AutoSize = true;
+            this.normalize_radioButton_2.Location = new System.Drawing.Point(160, 14);
+            this.normalize_radioButton_2.Name = "normalize_radioButton_2";
+            this.normalize_radioButton_2.Size = new System.Drawing.Size(71, 17);
+            this.normalize_radioButton_2.TabIndex = 15;
+            this.normalize_radioButton_2.TabStop = true;
+            this.normalize_radioButton_2.Text = "Normalisé";
+            this.normalize_radioButton_2.UseVisualStyleBackColor = true;
+            // 
             // none_radioButton_2
             // 
             this.none_radioButton_2.AutoSize = true;
@@ -292,6 +314,17 @@
             this.groupBox2.Size = new System.Drawing.Size(314, 38);
             this.groupBox2.TabIndex = 13;
             this.groupBox2.TabStop = false;
+            // 
+            // normalize_radioButton_1
+            // 
+            this.normalize_radioButton_1.AutoSize = true;
+            this.normalize_radioButton_1.Location = new System.Drawing.Point(160, 15);
+            this.normalize_radioButton_1.Name = "normalize_radioButton_1";
+            this.normalize_radioButton_1.Size = new System.Drawing.Size(71, 17);
+            this.normalize_radioButton_1.TabIndex = 14;
+            this.normalize_radioButton_1.TabStop = true;
+            this.normalize_radioButton_1.Text = "Normalisé";
+            this.normalize_radioButton_1.UseVisualStyleBackColor = true;
             // 
             // none_radioButton_1
             // 
@@ -389,40 +422,7 @@
             this.save_button.UseVisualStyleBackColor = true;
             this.save_button.Click += new System.EventHandler(this.save_button_Click);
             // 
-            // normalize_radioButton_0
-            // 
-            this.normalize_radioButton_0.AutoSize = true;
-            this.normalize_radioButton_0.Location = new System.Drawing.Point(160, 14);
-            this.normalize_radioButton_0.Name = "normalize_radioButton_0";
-            this.normalize_radioButton_0.Size = new System.Drawing.Size(71, 17);
-            this.normalize_radioButton_0.TabIndex = 13;
-            this.normalize_radioButton_0.TabStop = true;
-            this.normalize_radioButton_0.Text = "Normalisé";
-            this.normalize_radioButton_0.UseVisualStyleBackColor = true;
-            // 
-            // normalize_radioButton_1
-            // 
-            this.normalize_radioButton_1.AutoSize = true;
-            this.normalize_radioButton_1.Location = new System.Drawing.Point(160, 15);
-            this.normalize_radioButton_1.Name = "normalize_radioButton_1";
-            this.normalize_radioButton_1.Size = new System.Drawing.Size(71, 17);
-            this.normalize_radioButton_1.TabIndex = 14;
-            this.normalize_radioButton_1.TabStop = true;
-            this.normalize_radioButton_1.Text = "Normalisé";
-            this.normalize_radioButton_1.UseVisualStyleBackColor = true;
-            // 
-            // normalize_radioButton_2
-            // 
-            this.normalize_radioButton_2.AutoSize = true;
-            this.normalize_radioButton_2.Location = new System.Drawing.Point(160, 14);
-            this.normalize_radioButton_2.Name = "normalize_radioButton_2";
-            this.normalize_radioButton_2.Size = new System.Drawing.Size(71, 17);
-            this.normalize_radioButton_2.TabIndex = 15;
-            this.normalize_radioButton_2.TabStop = true;
-            this.normalize_radioButton_2.Text = "Normalisé";
-            this.normalize_radioButton_2.UseVisualStyleBackColor = true;
-            // 
-            // Form1
+            // SettingsStudentPhoto
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -433,7 +433,7 @@
             this.Controls.Add(this.display_result_textBox);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.textBox1);
-            this.Name = "Form1";
+            this.Name = "SettingsStudentPhoto";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Format nom des photos étudiantes";
             this.groupBox1.ResumeLayout(false);

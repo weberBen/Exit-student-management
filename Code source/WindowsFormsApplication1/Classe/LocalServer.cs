@@ -144,7 +144,6 @@ namespace LocalServer
         /*Allow to create class dynamically*/
         private dynamic response;
 
-
         public DynamicClass()
         {
             response = new ExpandoObject();
@@ -205,7 +204,7 @@ namespace LocalServer
             return Tuple.Create("text/plain", RESPONSE_ENCODING.GetBytes(response));
         }
 
-        public string getJsonResponseToRequest(ref string json_request_to_text, ref Agent input_agent)
+        public string jsonResponseToAuthentifiatedRequest(string json_request_to_text, ref Agent input_agent)
         {
             /* All the request from client side are send as Json string
              * And all the Json request are process here
@@ -233,94 +232,9 @@ namespace LocalServer
                 response.AddParm(nameof(json_request.request_object), json_request.request_object);
 
                 DataBase database = new DataBase();
-
                 //find the correct request to process
                 switch (json_request.request_object)//oject of the request
                 {
-                    case RequestTags.GET_LENGTH_RFID_ID:
-                        {
-                            //get the number of char for all the RFID id
-                            response.AddParm(nameof(json_request.length), Settings.LengthRfidId);
-                        }
-                        break;
-                    case RequestTags.GET_LENGTH_SHORT_SECURE_ID:
-                        {
-                            //get the number of char for all the short secure id
-                            response.AddParm(nameof(json_request.length), SecurityManager.NUMBER_ELEMENTS_SHORT_ID);
-                        }
-                        break;
-                    case RequestTags.GET_SAVED_REASONS_FOR_EXIT_BAN:
-                        {
-                            /*instead of having to write a reason (if agent need to set an exit ban), 
-                             * agent can choose one that has been saved previously
-                            */
-                            response.AddParm(nameof(json_request.result), Settings.ExitBanReasonsList);
-                        }
-                        break;
-                    case RequestTags.GET_INFO_FROM_RFID_DOOR:
-                        {
-                            //client ask if the student (given by its RFID id) can leave the school
-                            bool process_error = false;
-                            string message_to_display = "";
-
-                            if (!Tools.isRfidFormatCorrect(json_request.rfid_value))//if the RFID idformat is correct 
-                            {
-                                process_error = true;
-                                message_to_display = "Le format de l'identifiant RFID n'est pas correct";
-                            }
-                            else
-                            {
-
-                                //get actual date and time
-                                DateTime now = DateTime.Now;
-                                DateTime now_date = DateTime.ParseExact(now.ToString("dd-MM-yyyy"), "dd-MM-yyyy", CultureInfo.InvariantCulture);//acutal date + 00:00:00
-                                int day_of_week = (int)now.DayOfWeek;
-                                TimeSpan now_time = DateTime.Now.TimeOfDay.Add(Definition.PRECISION_BEFORE_EXIT_TIME);
-                                /* We can not keep the the actual time because any humain infrastructure have strict time
-                                 * In fact student could leave the school few minutes before the regular time.
-                                 * Moreover, the actual time is compare to all the start time and end time of an hour inside the database (for that student)
-                                 * In other words, the actual time, which we will call time, will be compare like : if( time>= start_hour_time and time<=end_hour_time)
-                                 * The fact is that student can leaves the school minutes before the start time but must not leeave the school few minutes after
-                                 * the end of the hour (which is really close to the start of the next study hour)
-                                 * Finally, we have to add somes minutes to the actual time (and not subtract). 
-                                 * In that way, the comparaison will be : if(time>= start_time - few_minutes and time<=end_time-few_minutes)
-                                 * (By the way, if we subtract few minutes to the actual date te comparaison will be :
-                                 *  if(time>= start_time + few_minutes and time<= end_time + few_minutes). As we see, the result is that student
-                                 *  can not leave the school until few minutes after the regular hour and can leave the school even if the regular end 
-                                 *  of the hour is ended)
-                                */
-
-                                Student student = database.getStudentByRFID(json_request.rfid_value);//find the corresponding student
-                                if (!student.error)
-                                {
-                                    //send back data
-                                    response.AddParm(nameof(json_request.student_last_name), student.lastName);
-                                    response.AddParm(nameof(json_request.student_first_name), student.firstName);
-                                    response.AddParm(nameof(json_request.student_division), student.division);
-                                    response.AddParm(nameof(json_request.student_photo),
-                                        Tools.getStudentPhotoName(student.lastName, student.firstName, student.division));
-
-                                    int authorization = database.getExitCertificationForStudent(student.tableId, now_date, day_of_week, now_time.Subtract(Definition.PRECISION_BEFORE_EXIT_TIME));
-                                    if (authorization == Definition.ERROR_INT_VALUE)
-                                    {
-                                        process_error = true;
-                                        message_to_display = "Une erreur est survenue sur le server";
-                                    }
-                                    else
-                                    {
-                                        response.AddParm(nameof(json_request.student_exit_authorization), authorization);
-                                    }
-                                }else
-                                {
-                                    process_error = true;
-                                    message_to_display = "Une erreur est survenue sur le server";
-                                }
-                            }
-
-                            response.AddParm(nameof(json_request.process_error), process_error);
-                            response.AddParm(nameof(json_request.message_to_display), message_to_display);
-                        }
-                        break;
                     case RequestTags.ESTABLISH_CONNECTION:
                         {//client try to acces to the app (authentification)
 
@@ -368,23 +282,23 @@ namespace LocalServer
 
                         }
                         break;
-                    case RequestTags.DISCONNECTION_FROM_SESSION:
-                        {//client want to end his session
-                            SecurityManager.setOnlineDisconnection(ref input_agent);
-                            response.AddParm(nameof(json_request.result_disconnection_from_session), true);
-
-                        }
-                        break;
                     case RequestTags.CHECK_IF_SESSION_IS_OPENED:
                         {   /* user try to open the app and the client side ask to the server if that client is already connected
                              * in order to know which page to open or which scritp to load
                              * 
                              * In fact the client app used javascritp to load the correct content and then ask to the server for that content
                             */
-                                response.AddParm(nameof(json_request.result_check_session_opened), SecurityManager.isOnlineSessionOpened(ref input_agent));
+                            response.AddParm(nameof(json_request.result_check_session_opened), SecurityManager.isOnlineSessionOpened(ref input_agent));
                             response.AddParm(nameof(json_request.agent_last_name), input_agent.lastName);
                             response.AddParm(nameof(json_request.agent_first_name), input_agent.firstName);
                             response.AddParm(nameof(json_request.agent_job), input_agent.job);
+                        }
+                        break;
+                    case RequestTags.DISCONNECTION_FROM_SESSION:
+                        {//client want to end his session
+                            SecurityManager.setOnlineDisconnection(ref input_agent);
+                            response.AddParm(nameof(json_request.result_disconnection_from_session), true);
+
                         }
                         break;
                     case RequestTags.GET_SEARCH_RESULT:
@@ -587,7 +501,6 @@ namespace LocalServer
                             response.AddParm(nameof(json_request.student_division), student.division);
                             response.AddParm(nameof(json_request.student_photo),
                                 Tools.getStudentPhotoName(student.lastName, student.firstName, student.division));
-
                         }
                         break;
                     case RequestTags.GET_LOG:
@@ -597,50 +510,6 @@ namespace LocalServer
 
                             string res = database.retriveAllInformationsByIndex(json_request.type_of_table, json_request.row_index);
                             response.AddParm(nameof(json_request.result), res);
-                        }
-                        break;
-                    case RequestTags.GET_STUDY_DATA:
-                        {
-                            /*User wan to know the study hours of the school*/
-                            CertifyAccreditationLevel = SecurityManager.RIGHTS_LIST.LastIndexOf(SecurityManager.RIGHT_SCHOOL_OFFICE_MEMBER);
-
-
-                            List<TimeSlot> list_timeslot = database.getExitAuthorizations(json_request.type_of_table, json_request.row_index);
-                            List<RequestTags.TextTimeSlot> list_formated_timeSlot = new List<RequestTags.TextTimeSlot>();
-
-                            /* We get all the result as a list of TimeSlot object which can not be send to the client as it 
-                             * because of an automatic conversion of date and time (into string) with potentialy an unknow format
-                             * So we have to convert the TimeSlot object into a string before send it to the client side
-                             * 
-                             * In fact we could have use a TimeSlot object with string value but when client send back data he will
-                             * also have to send them in a certain structure. So to simplify the probleme we create specifically a new stcurture 
-                             * to convert the data and get the data from client
-                            */
-                            foreach (TimeSlot timeSlot in list_timeslot)//convert all the time slot into text (at the correct text format)
-                            {//convert the object into a string object 
-                                if (!timeSlot.error)
-                                {
-                                    RequestTags.TextTimeSlot textTimeSlot = new RequestTags.TextTimeSlot();
-                                    textTimeSlot.id = timeSlot.id;
-                                    textTimeSlot.start_date = Tools.dateToStringFromDateTime(timeSlot.startDate);
-                                    textTimeSlot.end_date = Tools.dateToStringFromDateTime(timeSlot.endDate);
-                                    textTimeSlot.day_of_week = Definition.DAYS_OF_THE_WEEK[timeSlot.dayOfWeek];
-                                    textTimeSlot.start_time = Tools.timeToStringFromTimeSpan(timeSlot.startTime);
-                                    textTimeSlot.end_time = Tools.timeToStringFromTimeSpan(timeSlot.endTime);
-                                    textTimeSlot.read_only = timeSlot.readOnly;
-                                    textTimeSlot.meta_text = timeSlot.metaText;
-
-                                    list_formated_timeSlot.Add(textTimeSlot);
-                                }
-                            }
-
-                            response.AddParm(nameof(json_request.timeSpan_text_format), Definition.TIMESPAN_FORMAT);
-                            response.AddParm(nameof(json_request.date_text_format), Definition.DATE_FORMAT);
-                            response.AddParm(nameof(json_request.timeSlot_separator), Definition.TIMESLOT_SEPARATOR);
-                            response.AddParm(nameof(json_request.study_hours), Settings.getStudyHoursToText());
-                            response.AddParm(nameof(json_request.school_days), Tools.getTextSchoolDays());
-                            response.AddParm(nameof(json_request.authorizations_list), list_formated_timeSlot);
-                            //send a list of object within string value converted with a specific format
                         }
                         break;
                     case RequestTags.CHANGE_PASSWORD:
@@ -712,25 +581,6 @@ namespace LocalServer
                             response.AddParm(nameof(json_request.message_to_display), message_to_display);
                         }
                         break;
-                    case RequestTags.GET_FILE_NAME_ERROR_SOUND:
-                        {
-                            /* When student try to leave the school while they don't have the permission
-                             * the client app play a song
-                             * So here user ask for the name of the song to play
-                            */
-                            response.AddParm(nameof(RequestTags.file_name), Settings.ErrorAudioFileName);
-                        }
-                        break;
-                    case RequestTags.GET_VALID_EXTENSIONS_FILE:
-                        {
-                            /* User can upload file to the server side and ask for the valid extension according 
-                             * to the type of the file he want to upload
-                            */
-                            response.AddParm(nameof(RequestTags.STUDENT_STATE_FILE), Definition.VALID_STUDENT_FILE_EXTENSION);
-                            response.AddParm(nameof(RequestTags.UNAUTHORIZED_EXIT_SOUND_FILE), Definition.VALID_AUDIO_EXTENSION);
-
-                        }
-                        break;
                     case RequestTags.UPLOAD_FILE:
                         {
                             /* User upload files. All the data are send as bytes array*/
@@ -786,12 +636,6 @@ namespace LocalServer
 
                         }
                         break;
-                    case RequestTags.GET_SCHOOL_NAME:
-                        {
-                            /*User want to get the name of the school*/
-                            response.AddParm(nameof(json_request.result), Settings.SchoolName);
-                        }
-                        break;
                     default://the request is not process by the app
                         {
                             response.AddParm("", "");
@@ -815,14 +659,199 @@ namespace LocalServer
 
                 return JsonConvert.SerializeObject(response.create());
                 //convert the dynamic class into a Json object, then convert the Json object into string
-            }catch(Exception e)//error
+            }catch//error
             {
-                Error.details = "" + e;
-                Error.error = "ICRWS";
-                return "";
+                return null;
             }
 
             
+        }
+
+
+        public string jsonResponseToUnauthentifiatedRequest(string json_request_to_text)
+        {
+            /* When user send a request, sometime, he only want to get a regular informations that will not required an authentification
+             * We gather all these regular request in that function
+             * In other words, if the request is considered as regular, the we will skip all the porcess of authentifiate the user.
+             * Thus the process will be faster (especially the one who need to know if a student can leave the school, that need to respond as fast as possible)
+            */
+            try
+            {
+                RequestTags json_request;//request from client side
+                DynamicClass response = new DynamicClass();
+                DataBase database;
+
+                json_request = JsonConvert.DeserializeObject<RequestTags>(json_request_to_text);
+                response.AddParm(nameof(json_request.request_object), json_request.request_object);
+
+                database = new DataBase();
+
+                switch (json_request.request_object)//oject of the request
+                {
+                    case RequestTags.GET_LENGTH_RFID_ID:
+                        {
+                            //get the number of char for all the RFID id
+                            response.AddParm(nameof(json_request.length), Settings.LengthRfidId);
+                        }
+                        break;
+                    case RequestTags.GET_LENGTH_SHORT_SECURE_ID:
+                        {
+                            //get the number of char for all the short secure id
+                            response.AddParm(nameof(json_request.length), SecurityManager.NUMBER_ELEMENTS_SHORT_ID);
+                        }
+                        break;
+                    case RequestTags.GET_SAVED_REASONS_FOR_EXIT_BAN:
+                        {
+                            /*instead of having to write a reason (if agent need to set an exit ban), 
+                             * agent can choose one that has been saved previously
+                            */
+                            response.AddParm(nameof(json_request.result), Settings.ExitBanReasonsList);
+                        }
+                        break;
+                    case RequestTags.GET_INFO_FROM_RFID_DOOR:
+                        {
+                            //client ask if the student (given by its RFID id) can leave the school
+                            bool process_error = false;
+                            string message_to_display = "";
+
+                            //get actual date and time
+                            DateTime now = DateTime.Now;
+                            DateTime now_date = DateTime.ParseExact(now.ToString("dd-MM-yyyy"), "dd-MM-yyyy", CultureInfo.InvariantCulture);//acutal date + 00:00:00
+                            int day_of_week = (int)now.DayOfWeek;
+                            TimeSpan now_time = DateTime.Now.TimeOfDay.Add(Definition.PRECISION_BEFORE_EXIT_TIME);
+                            /* We can not keep the the actual time because any humain infrastructure have strict time
+                                * In fact student could leave the school few minutes before the regular time.
+                                * Moreover, the actual time is compare to all the start time and end time of an hour inside the database (for that student)
+                                * In other words, the actual time, which we will call time, will be compare like : if( time>= start_hour_time and time<=end_hour_time)
+                                * The fact is that student can leaves the school minutes before the start time but must not leeave the school few minutes after
+                                * the end of the hour (which is really close to the start of the next study hour)
+                                * Finally, we have to add somes minutes to the actual time (and not subtract). 
+                                * In that way, the comparaison will be : if(time>= start_time - few_minutes and time<=end_time-few_minutes)
+                                * (By the way, if we subtract few minutes to the actual date te comparaison will be :
+                                *  if(time>= start_time + few_minutes and time<= end_time + few_minutes). As we see, the result is that student
+                                *  can not leave the school until few minutes after the regular hour and can leave the school even if the regular end 
+                                *  of the hour is ended)
+                            */
+
+                            Student student = database.getStudentByRFID(json_request.rfid_value);//find the corresponding student
+                            if (!student.error)
+                            {
+                                //send back data
+                                response.AddParm(nameof(json_request.student_last_name), student.lastName);
+                                response.AddParm(nameof(json_request.student_first_name), student.firstName);
+                                response.AddParm(nameof(json_request.student_division), student.division);
+                                response.AddParm(nameof(json_request.rfid_value), json_request.rfid_value);
+                                string photo = Tools.getStudentPhotoName(student.lastName, student.firstName, student.division);
+                                if(photo.Length==0)
+                                {
+                                    photo = Definition.NAME_DEFAULT_STUDENT_PHOTO;
+                                }
+                                response.AddParm(nameof(json_request.student_photo), photo);
+
+                                int authorization = database.getExitCertificationForStudent(student.tableId, now_date, day_of_week, now_time);
+                                if (authorization == Definition.ERROR_INT_VALUE)
+                                {
+                                    process_error = true;
+                                    message_to_display = "Une erreur est survenue sur le server";
+                                }
+                                else
+                                {
+                                    response.AddParm(nameof(json_request.student_exit_authorization), authorization);
+                                }
+                            }
+                            else
+                            {
+                                process_error = true;
+                                message_to_display = "Une erreur est survenue sur le server";
+                            }
+
+
+                            response.AddParm(nameof(json_request.process_error), process_error);
+                            response.AddParm(nameof(json_request.message_to_display), message_to_display);
+
+                            break;
+                        }
+                    case RequestTags.GET_STUDY_DATA:
+                        {
+                            /*User wan to know the study hours of the school*/
+                            CertifyAccreditationLevel = SecurityManager.RIGHTS_LIST.LastIndexOf(SecurityManager.RIGHT_SCHOOL_OFFICE_MEMBER);
+
+
+                            List<TimeSlot> list_timeslot = database.getExitAuthorizations(json_request.type_of_table, json_request.row_index);
+                            List<RequestTags.TextTimeSlot> list_formated_timeSlot = new List<RequestTags.TextTimeSlot>();
+
+                            /* We get all the result as a list of TimeSlot object which can not be send to the client as it 
+                             * because of an automatic conversion of date and time (into string) with potentialy an unknow format
+                             * So we have to convert the TimeSlot object into a string before send it to the client side
+                             * 
+                             * In fact we could have use a TimeSlot object with string value but when client send back data he will
+                             * also have to send them in a certain structure. So to simplify the probleme we create specifically a new stcurture 
+                             * to convert the data and get the data from client
+                            */
+                            foreach (TimeSlot timeSlot in list_timeslot)//convert all the time slot into text (at the correct text format)
+                            {//convert the object into a string object 
+                                if (!timeSlot.error)
+                                {
+                                    RequestTags.TextTimeSlot textTimeSlot = new RequestTags.TextTimeSlot();
+                                    textTimeSlot.id = timeSlot.id;
+                                    textTimeSlot.start_date = Tools.dateToStringFromDateTime(timeSlot.startDate);
+                                    textTimeSlot.end_date = Tools.dateToStringFromDateTime(timeSlot.endDate);
+                                    textTimeSlot.day_of_week = Definition.DAYS_OF_THE_WEEK[timeSlot.dayOfWeek];
+                                    textTimeSlot.start_time = Tools.timeToStringFromTimeSpan(timeSlot.startTime);
+                                    textTimeSlot.end_time = Tools.timeToStringFromTimeSpan(timeSlot.endTime);
+                                    textTimeSlot.read_only = timeSlot.readOnly;
+                                    textTimeSlot.meta_text = timeSlot.metaText;
+
+                                    list_formated_timeSlot.Add(textTimeSlot);
+                                }
+                            }
+
+                            response.AddParm(nameof(json_request.timeSpan_text_format), Definition.TIMESPAN_FORMAT);
+                            response.AddParm(nameof(json_request.date_text_format), Definition.DATE_FORMAT);
+                            response.AddParm(nameof(json_request.timeSlot_separator), Definition.TIMESLOT_SEPARATOR);
+                            response.AddParm(nameof(json_request.study_hours), Settings.getStudyHoursToText());
+                            response.AddParm(nameof(json_request.school_days), Tools.getTextSchoolDays());
+                            response.AddParm(nameof(json_request.authorizations_list), list_formated_timeSlot);
+                            //send a list of object within string value converted with a specific format
+                        }
+                        break;
+                    case RequestTags.GET_FILE_NAME_ERROR_SOUND:
+                        {
+                            /* When student try to leave the school while they don't have the permission
+                             * the client app play a song
+                             * So here user ask for the name of the song to play
+                            */
+                            response.AddParm(nameof(RequestTags.file_name), Settings.ErrorAudioFileName);
+                        }
+                        break;
+                    case RequestTags.GET_VALID_EXTENSIONS_FILE:
+                        {
+                            /* User can upload file to the server side and ask for the valid extension according 
+                             * to the type of the file he want to upload
+                            */
+                            response.AddParm(nameof(RequestTags.STUDENT_STATE_FILE), Definition.VALID_STUDENT_FILE_EXTENSION);
+                            response.AddParm(nameof(RequestTags.UNAUTHORIZED_EXIT_SOUND_FILE), Definition.VALID_AUDIO_EXTENSION);
+
+                        }
+                        break;
+                    case RequestTags.GET_SCHOOL_NAME:
+                        {
+                            /*User want to get the name of the school*/
+                            response.AddParm(nameof(json_request.result), Settings.SchoolName);
+                        }
+                        break;
+                    default://the request is not process by the app
+                        {
+                            return null;
+                        }
+                        break;
+                }
+
+                return JsonConvert.SerializeObject(response.create());
+            }catch
+            {
+                return null;
+            }
         }
 
 
@@ -1029,8 +1058,6 @@ namespace LocalServer
                     return;
                 }
             }
-
-
         }
 
 
@@ -1040,6 +1067,8 @@ namespace LocalServer
             try
             {
                 HttpListenerContext context;
+                string content_type = "";
+                byte[] responseArray = null;
 
                 if (!_listener.IsListening)
                 {
@@ -1064,102 +1093,38 @@ namespace LocalServer
 
                 try
                 {
+                    /*Somme request need the user to be authentificated for the server. To do that, we need to loop into a list of object in order 
+                     * to see if the ip adress of the user and other informations matche with the ones saved into memory. So the porcess is slow
+                     * And in other hand, some request don't need the user to be authentificated. So check if the user is registered is time consuming 
+                     * for these requests. 
+                     * 
+                     * TO increase the spee of the global process, we first check if the request does not need any authentification informations.
+                     * In that case, we directly send back the response. Else, we check if the user is registered and then send back the request according to the user's
+                     * accrediation level.
+                    */
+                    string request_content = readRequest(context);
 
-
-                    string content_type = "";
-                    byte[] responseArray = null;
-
-
-                    string client_ip_adress = context.Request.RemoteEndPoint.Address.ToString();//get just the ip adress without the port
-                    string cookie;
-                    try
+                    var tuple = getResponseWithoutAuthentification(context, request_content);//request without authentification
+                    if(tuple != null)
                     {
-                        cookie = context.Request.Cookies[DataRequest.TAG_COOKIE_CLIENT_REF].Value;//client cookie
-                    }
-                    catch
-                    {
-                        cookie = null;
-                    }
-
-                    Agent agent = SecurityManager.getOnlineAgentFromIpAdress(client_ip_adress, cookie);
-                    /*The call of that function is essential to the rest of the code because it update clients informations
-                     * and add new client into memory
-                     * After that call, all informations about client has been updated
-                   */
-
-                    if (agent.banned)//agent is banned
-                    {
-                        string request_content = readRequest(context);
-                        try
-                        {
-                            RequestTags json_request = JsonConvert.DeserializeObject<RequestTags>(request_content);
-                            if (json_request.request_object != null)//client has send a post request (page has not been reloaded yet)
-                            {
-                                string response = DataRequest.setRestTimeBanishment(request_content, agent.banishmentStartTime);
-                                //send the remaining time since client could log in again
-                                if (response != "")//client want to know the remaining time
-                                {
-                                    var tuple = DataRequest.getFormatedResponse(response);
-                                    content_type = tuple.Item1;
-                                    responseArray = tuple.Item2;
-                                }
-                                else
-                                {
-                                    response = DataRequest.reloadClientPage();
-                                    var tuple = DataRequest.getFormatedResponse(response);
-                                    content_type = tuple.Item1;
-                                    responseArray = tuple.Item2;
-                                }
-                            }
-
-                        }catch //client just reload the page
-                        {
-                            var tuple = getFormatedResponseForHtmlPage(Definition.PATH_TO_HTML_BANNED_PAGE);
-                            content_type = tuple.Item1;
-                            responseArray = tuple.Item2;
-                        }
-
-                    }
-                    else
-                    {
-
-                        /*The place of the call is importante :
-                        * Image object have to be load into the cache memory before using it 
-                        * Thus, images have to be available before the any html page is displayed
-                        */
-                        var tuple = AjaxRequest(context, ref agent);//handle all ajax request from the client side
                         content_type = tuple.Item1;
                         responseArray = tuple.Item2;
-
-                        if (responseArray == null)//client don't send ajax request
+                    }else
+                    {
+                        tuple = getResponseWithAuthentification(ref context, request_content);//request with authentification
+                        if (tuple != null)
                         {
-                            tuple = otherRequest(context, ref agent);//handle all the json request from the client side
                             content_type = tuple.Item1;
                             responseArray = tuple.Item2;
+                        }else
+                        {
+                            var temp_tuple = getFormatedResponseForHtmlPage(Definition.PATH_TO_HTML_START_PAGE);//home page
+                            if (temp_tuple != null)
+                            {
+                                content_type = temp_tuple.Item1;
+                                responseArray = temp_tuple.Item2;
+                            }
                         }
-
-                        if (responseArray == null)//client don't send Json request
-                        { 
-                            //send back the main HTML page
-                            tuple = getFormatedResponseForHtmlPage(Definition.PATH_TO_HTML_START_PAGE);
-                            content_type = tuple.Item1;
-                            responseArray = tuple.Item2;
-                        }
-
-                        /*Clent session is associate with the windows account and not with the computer itself
-                         * To achieve that after client succeed in connecting to the database, we send back a specific string
-                         * that will be stored as a cookie (and will be send with each request from that client)
-                         * Thus, client are identify by their ip adress and by their cookie 
-                         * (because cookie is relative to a sessions and not to a computer)
-                        */
-
-                        Cookie cookie_to_send = new Cookie();
-                        cookie_to_send.Name = DataRequest.TAG_COOKIE_CLIENT_REF;
-                        cookie_to_send.Value = agent.sessionId;
-                        cookie_to_send.Expires = DateTime.Now.Add(TimeSpan.FromMinutes(SecurityManager.TIMEOUT_ONLINE_SESSION_MIN));
-
-                        context.Response.SetCookie(cookie_to_send);
-
                     }
 
                     //send response to the client side
@@ -1203,7 +1168,142 @@ namespace LocalServer
             }
         }
 
+        private Tuple<string, byte[]> getResponseWithoutAuthentification(HttpListenerContext context, string request_content)
+        {
+            string content_type = null;
+            byte[] responseArray = null;
 
+            Agent agent = new Agent();
+            agent.toDefault();
+            agent.unauthenticated = true;
+
+
+            var temp_tuple = AjaxRequest(context, ref agent);//handle all ajax request from the client side
+            if (temp_tuple != null)
+            {
+                content_type = temp_tuple.Item1;
+                responseArray = temp_tuple.Item2;
+
+            }
+            else//client don't send ajax request
+            {
+                temp_tuple = computationalRequest(request_content, ref agent, false);//false = no need to be authenticated
+                if (temp_tuple != null)
+                {
+                    content_type = temp_tuple.Item1;
+                    responseArray = temp_tuple.Item2;
+                }
+            }
+
+            if (responseArray == null)
+            {
+                return null;
+            }
+            return Tuple.Create(content_type, responseArray);
+        }
+
+        private Tuple<string, byte[]> getResponseWithAuthentification(ref HttpListenerContext context, string request_content)
+        {
+            string content_type = null;
+            byte[] responseArray = null;
+
+
+            string client_ip_adress = context.Request.RemoteEndPoint.Address.ToString();//get just the ip adress without the port
+            string cookie;
+            try
+            {
+                cookie = context.Request.Cookies[DataRequest.TAG_COOKIE_CLIENT_REF].Value;//client cookie
+            }
+            catch
+            {
+                cookie = null;
+            }
+
+            Agent agent = SecurityManager.getOnlineAgentFromIpAdress(client_ip_adress, cookie);
+            /*The call of that function is essential to the rest of the code because it update clients informations
+             * and add new client into memory
+             * After that call, all informations about client has been updated
+           */
+            if (agent.banned)//agent is banned
+            {
+                try
+                {
+                    RequestTags json_request = JsonConvert.DeserializeObject<RequestTags>(request_content);
+                    if (json_request.request_object != null)//client has send a post request (page has not been reloaded yet)
+                    {
+                        string response = DataRequest.setRestTimeBanishment(request_content, agent.banishmentStartTime);
+                        //send the remaining time since client could log in again
+                        if (response != "")//client want to know the remaining time
+                        {
+                            var tuple = DataRequest.getFormatedResponse(response);
+                            content_type = tuple.Item1;
+                            responseArray = tuple.Item2;
+                        }
+                        else
+                        {
+                            response = DataRequest.reloadClientPage();
+                            var tuple = DataRequest.getFormatedResponse(response);
+                            content_type = tuple.Item1;
+                            responseArray = tuple.Item2;
+                        }
+                    }
+
+                }
+                catch //client just reload the page
+                {
+                    var tuple = getFormatedResponseForHtmlPage(Definition.PATH_TO_HTML_BANNED_PAGE);
+                    content_type = tuple.Item1;
+                    responseArray = tuple.Item2;
+                }
+
+            }
+            else
+            {
+
+                /*The place of the call is importante :
+                * Image object have to be load into the cache memory before using it 
+                * Thus, images have to be available before the any html page is displayed
+                */
+                var tuple = AjaxRequest(context, ref agent);//handle all ajax request from the client side
+                if (tuple != null)
+                {
+                    content_type = tuple.Item1;
+                    responseArray = tuple.Item2;
+
+                }
+                else//client don't send ajax request
+                {
+                    tuple = computationalRequest(request_content, ref agent, true);//handle all the json request from the client side
+                    if (tuple != null)
+                    {
+                        content_type = tuple.Item1;
+                        responseArray = tuple.Item2;
+
+                    }
+                }
+
+                /*Clent session is associate with the windows account and not with the computer itself
+                 * To achieve that after client succeed in connecting to the database, we send back a specific string
+                 * that will be stored as a cookie (and will be send with each request from that client)
+                 * Thus, client are identify by their ip adress and by their cookie 
+                 * (because cookie is relative to a sessions and not to a computer)
+                */
+
+                Cookie cookie_to_send = new Cookie();
+                cookie_to_send.Name = DataRequest.TAG_COOKIE_CLIENT_REF;
+                cookie_to_send.Value = agent.sessionId;
+                cookie_to_send.Expires = DateTime.Now.Add(TimeSpan.FromMinutes(SecurityManager.TIMEOUT_ONLINE_SESSION_MIN));
+
+                context.Response.SetCookie(cookie_to_send);
+            }
+
+            if (responseArray == null)
+            {
+                return null;
+            }
+            return Tuple.Create(content_type, responseArray);
+
+        }
 
         private string readRequest(HttpListenerContext context)
         {
@@ -1307,11 +1407,23 @@ namespace LocalServer
                 string path_to_file = Tools.getPathInPrivateOrPublicDirectoryFromFileName(directories_list[index], fileName_list[index]);
                 //get the path to file (no matter if the file is private or public)
                 
-                if ( (!SecurityManager.isOnlineSessionOpened(ref agent)) && (!Tools.fileIsPublic(path_to_file)) )
+                if ( ((agent.tableId==-1) && (!Tools.fileIsPublic(path_to_file))))
                 {//if the client is not registered and try to get a private file
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;//send an error to the client page
-                    content_type = "text/plain";
-                    responseArray = DataRequest.getEncoding().GetBytes("");//send empty content
+                    if (!agent.unauthenticated)
+                    {
+                        /* To send back a response from an ajax request, first we check if the content does not need to be authentificated
+                         * If yes, we will come here for the first time. But at that step we can't send back an error message to the user
+                         * because we will need to check if the user is registered and check again if he can acces the content according 
+                         * to his accreditation level
+                         * 
+                         * So the first we will set the member unauthenticated to true, and the second time we will set it to false (the default value)
+                         * 
+                        */
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;//send an error to the client page
+                        content_type = "text/plain";
+                        responseArray = DataRequest.getEncoding().GetBytes("");//send empty content
+                    }
+                    
                 }
                 else
                 {
@@ -1321,7 +1433,6 @@ namespace LocalServer
                         {
                             path_to_file = Definition.PATH_TO_DEFAULT_STUDENT_PHOTO;
                         }
-                        
 
                         content_type = contentType_list[index];
                         responseArray = File.ReadAllBytes(path_to_file);
@@ -1330,39 +1441,50 @@ namespace LocalServer
                 }
 
             }
+
+            if(responseArray==null)
+            {
+                return null;
+            }
             return Tuple.Create(content_type, responseArray);
         }
 
 
 
-        private Tuple<string, byte[]> otherRequest(HttpListenerContext context, ref Agent agent)
+        private Tuple<string, byte[]> computationalRequest(string request_content, ref Agent agent, bool authentification)
         {
             /*Client ask for a specific infomration trough Json data*/
 
             byte[] responseArray = null;
             string content_type = "";
-            string request_content = readRequest(context);
-
-
-
-
 
             try
             {
-                //data from client side as send as Json object as text
-                DataRequest Response= new DataRequest();
-                string response = Response.getJsonResponseToRequest(ref request_content, ref agent);
+                DataRequest Response = new DataRequest();
+                string response;
 
-                if (response != "")
+                if (authentification)
+                {
+                    //data from client side as send as Json object as text
+                    response = Response.jsonResponseToAuthentifiatedRequest(request_content, ref agent);
+                }else
+                {
+                    response = Response.jsonResponseToUnauthentifiatedRequest(request_content);
+                }
+
+                if (response != null)
                 {
                     var tuple = DataRequest.getFormatedResponse(response);
                     content_type = tuple.Item1;
                     responseArray = tuple.Item2;
+
+                    return Tuple.Create(content_type, responseArray);
                 }
 
             } catch { }
 
-            return Tuple.Create(content_type, responseArray);
+            return null;
+           
         }
 
 

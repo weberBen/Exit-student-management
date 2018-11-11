@@ -279,7 +279,6 @@
           } catch (e) {
             return;
           }
-
           switch (data[GlobalDefinition.REQUEST_OBJECT_TAG]) {
             case GlobalDefinition.REQUEST_DISCONNECTION_FROM_SESSION:
               {
@@ -344,11 +343,9 @@
 						{
 							location.reload();
 						}
-						
 						document.getElementById("content_element").innerHTML="";
 					}
 			});
-
           },
 
           clickOnDoorIcon: function() {

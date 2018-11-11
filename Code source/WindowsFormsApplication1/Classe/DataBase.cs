@@ -188,7 +188,7 @@ class DataBase
 
                     continue;
                 }
-
+                
                 Error.details = "Requête non valide : " + request + "\n\n" + e_sql;
                 Error.error = "CERTDB";
                 break;

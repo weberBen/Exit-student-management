@@ -555,7 +555,7 @@ namespace ToolsClass
                         element_value = element_value.ToLower();
                         break;
                     case Definition.TEXT_FORMAT_NORMALIZE://normalized
-                        element_value = Tools.removeDiacritics(element_value);
+                        element_value = Tools.removeDiacritics(element_value).ToLower();
                         break;
                 }
             };
@@ -1125,6 +1125,7 @@ namespace ToolsClass
             public int numberOfConnectionAttemps;
             public bool banned;
             public bool error;
+            public bool unauthenticated;
 
 
             public void toDefault()
@@ -1147,6 +1148,7 @@ namespace ToolsClass
                 numberOfConnectionAttemps = 0;
                 banned = false;
                 error = false;
+                unauthenticated = false;
             }
 
             public int getDeleteAgentValue()

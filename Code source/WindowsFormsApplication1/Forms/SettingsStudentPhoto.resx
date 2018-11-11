@@ -123,7 +123,7 @@ Chaque photo est donc identifiée par la combinaison de ces informations, devant
 Par exemples, le nom des photos peut être "NomEleveMajuscule_PrenomEleveMinuscule_ClasseEleveMajuscule"
 
 A noter que l'option "Tel quel" utilise les informations de la base de données sont les transformer. Ce faisant si le nom de l'élève présent dans la base de données est "Anna" et que celui présent sur la photo est "anna", le logiciel ne sera pas en mesure de reconnaitre la photo.
-L'option "Normaliser" permet de remplacer toutes les lettres alphabétiques accentuées par leurs correspondances non accentuées, lorsqu'il existe une correspondance. Par exemple, "Dîllàrd&amp;" devient "Dillard&amp;".
+L'option "Normaliser" permet de remplacer toutes les lettres alphabétiques accentuées par leurs correspondances non accentuées (en minuscule), lorsqu'il existe une correspondance. Par exemple, "Dîllàrd&amp;" devient "dillard&amp;".
 </value>
   </data>
 </root>
