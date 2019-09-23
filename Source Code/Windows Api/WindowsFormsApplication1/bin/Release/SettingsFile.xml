@@ -34,9 +34,11 @@
     <item name="Format_element"></item>
     <item name="Separator"></item>
   </div>
-  <div name="School_days"></div>
+  <div name="School_days">
+  </div>
   <field name="Lunch_time" Lunch_time=""></field>
-  <div name="Study_time"></div>
+  <div name="Study_time">
+  </div>
   <div name="List_parameters_for_mails_sender">
     <item name="Mail_adress"></item>
     <item name="Password"></item>
@@ -48,5 +50,5 @@
   <div name="Mails_list"></div>
   <field name="Length_exit_break" Length_exit_break=""></field>
   <field name="Length_rfid_id" Length_rfid_id=""></field>
-  <field name="Date_last_suppression_from_database" Date_last_suppression_from_database="21-09-2019 17:54:55:440"></field>
+  <field name="Date_last_suppression_from_database" Date_last_suppression_from_database=""></field>
 </Settings>

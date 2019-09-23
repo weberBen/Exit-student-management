@@ -71,11 +71,12 @@ static class SecurityManager
     */
     //name of the accreditations
     public const string RIGHT_DEUS = "Deus ex machina";
+    public const string RIGHT_ADMIN = "Admin";
     public const string RIGHT_ADMINISTRATION = "Administration";
     public const string RIGHT_CHEF_SCHOOL_OFFICE = "Responsable vie scolaire";
     public const string RIGHT_SCHOOL_OFFICE_MEMBER = "Membre vie scolaire";
     //Accreditaion value is integer and refer to the following list of accreditation
-    public static List<string> RIGHTS_LIST = new List<string> { RIGHT_DEUS, RIGHT_ADMINISTRATION, RIGHT_CHEF_SCHOOL_OFFICE, RIGHT_SCHOOL_OFFICE_MEMBER };
+    public static List<string> RIGHTS_LIST = new List<string> { RIGHT_DEUS, RIGHT_ADMIN,  RIGHT_ADMINISTRATION, RIGHT_CHEF_SCHOOL_OFFICE, RIGHT_SCHOOL_OFFICE_MEMBER };
 
     public const int NUMBER_ELEMENTS_SHORT_ID = 4;
     private const int NUMBER_ALPHA_ELEMENTS_SHORT_ID = 1;

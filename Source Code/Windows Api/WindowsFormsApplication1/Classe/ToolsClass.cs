@@ -159,6 +159,9 @@ namespace ToolsClass
         public const int TEXT_FORMAT_NORMALIZE = 2;
         public const int TEXT_FORMAT_INVISIBLE = 3;
 
+        public static readonly char[] SPECIAL_CHAR_STUDENT_NAME = new char[] { '\'', ' ', '-' };
+        public static readonly char[] SPECIAL_CHAR_STUDENT_DIVISION = new char[] { '\'', ' ', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+
     }
 
 
@@ -893,6 +896,58 @@ namespace ToolsClass
         }
 
 
+        public static string removeNonLettersChar(string text, string replace, char[] special_char_array)
+        {
+            string output = "";
+
+            foreach (char c in text)
+            {
+                if (Char.IsLetter(c))
+                {
+                    output += c;
+                }
+                else if(special_char_array!=null)
+                {
+                    foreach (char temp_c in special_char_array)
+                    {
+                        if (c == temp_c)
+                        {
+                            output += c;
+                            break;
+                        }
+                    }
+                    output += replace;
+                }
+                else
+                {
+                    output += replace;
+                }
+            }
+
+            return output;
+        }
+
+        public static string normalizeStudentInfo(string text, bool name=false, bool division=false, bool sex=false, bool halboardDays=false)
+        {
+            if(!(name ^ division ^ sex ^ halboardDays))//only one option at a time
+                return null;
+
+            if(text==null)
+                return null;
+            if (text.Length == 0)
+                return "";
+
+            char[] special_char;
+
+            if (name)
+                special_char = Definition.SPECIAL_CHAR_STUDENT_NAME;
+            else if (division || sex || halboardDays)
+                special_char = Definition.SPECIAL_CHAR_STUDENT_DIVISION;
+            else
+                return null;
+
+            return removeNonLettersChar(text, "", special_char);
+        }
 
         public static string removeDiacritics(string text)
         {
@@ -967,7 +1022,6 @@ namespace ToolsClass
                         line = reader.ReadLine();
                         values = line.Split(Definition.CSV_COLUMN_SEPARATOR);
 
-
                         if (count%100 == 0)//we save student into the database block of n students by block of n students at once
                         {
                             res = database.updateStudentTable(list_student);
@@ -981,14 +1035,14 @@ namespace ToolsClass
                             count = 1;
                         }
 
-                        Regex rgx = new Regex("[^a-zA-Z0-9 -]");//remove all non-alphabetic char
+                        
                         student.toDefault();
-                        student.lastName = rgx.Replace(values[parms.lastNameIndex], "");//Last name (string)
-                        student.firstName = rgx.Replace(values[parms.firstNameIndex], "");// First name (string)
-                        student.division = rgx.Replace(values[parms.divisionIndex], ""); // division (string)
-                        student.sex = Tools.SexIntFromString(rgx.Replace(values[parms.sexIndex], ""), parms.femaleShortname); //sex (int)
-                        student.halfBoardDays = Tools.getNumericHalfBoardDaysFromString(rgx.Replace(values[parms.halfBoardDaysIndex], "")); //half-board regime (string)
-
+                        student.lastName = normalizeStudentInfo(values[parms.lastNameIndex], name:true);//Last name (string)
+                        student.firstName = normalizeStudentInfo(values[parms.firstNameIndex], name:true);// First name (string)
+                        student.division = normalizeStudentInfo(values[parms.divisionIndex], division:true); // division (string)
+                        student.sex = Tools.SexIntFromString(normalizeStudentInfo(values[parms.sexIndex], sex:true), parms.femaleShortname); //sex (int)
+                        student.halfBoardDays = Tools.getNumericHalfBoardDaysFromString(normalizeStudentInfo(values[parms.halfBoardDaysIndex], halboardDays:true)); //half-board regime (string)
+                        
                         list_student.Add(student);
 
                         count++;

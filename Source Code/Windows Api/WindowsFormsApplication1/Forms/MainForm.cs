@@ -67,6 +67,7 @@ public partial class MainForm : Form
             InitializeComponent();
             banner = this.displayEventTextBox;
 
+
             updateComputerTableId();
             EmptyAdmin(); //check if it's needed to set a new admi
 
@@ -97,13 +98,13 @@ public partial class MainForm : Form
                         item.Tag = SecurityManager.RIGHTS_LIST[0];
                         break;
                     case "settings":
-                        item.Tag = SecurityManager.RIGHTS_LIST[0];
-                        break;
-                    case "administration":
                         item.Tag = SecurityManager.RIGHTS_LIST[1];
                         break;
-                    case "schoollifeoffice":
+                    case "administration":
                         item.Tag = SecurityManager.RIGHTS_LIST[2];
+                        break;
+                    case "schoollifeoffice":
+                        item.Tag = SecurityManager.RIGHTS_LIST[3];
                         break;
                 }
 

@@ -2338,7 +2338,6 @@ class DataBase
                 {
                     sql_reader.Read();
                     count = sql_reader.GetInt32(0);
-                    Console.WriteLine("val=" + count);
                 }
             }
 

@@ -179,14 +179,7 @@ namespace WindowsFormsApplication1.Forms
             agent.job = job_textBox.Text;
             agent.mailAdress = mail_adress_textBox.Text;
             agent.setIntRightFromString(right_checkedListBox.CheckedItems[0].ToString());
-            agent.id = id_textBox.Text;
-
-            //user cannot create an account with higher priviledges
-            if (!SecurityManager.rightLevelEnoughToAccesSystem(SecurityManager.getConnectedAgentRight(), agent.getRight()))
-            {
-                MessageBox.Show("Vous ne pouvez pas créer un compte de plus haut privilege que le votre");
-                return; 
-            }
+            agent.id = id_textBox.Text; 
 
             if (password_textBox.Text.Replace(" ","").Length!=0)//password has been changed
             {
@@ -214,6 +207,13 @@ namespace WindowsFormsApplication1.Forms
 
             if (agent.tableId==-1)//if user add a new agent we automatically set a new short id for him
             {
+                //user cannot create an account with higher priviledges
+                if (!SecurityManager.rightLevelEnoughToAccesSystem(SecurityManager.getConnectedAgentRight(), agent.getRight()))
+                {
+                    MessageBox.Show("Vous ne pouvez pas créer un compte de plus haut privilege que le votre");
+                    return;
+                }
+
                 agent.shortSecureId = SecurityManager.setAgentShortSecureId();
                 res = database.addNewAgent(agent);
 
@@ -229,6 +229,17 @@ namespace WindowsFormsApplication1.Forms
 
             }else
             {
+                //user cannot edit an account with higher or equal priviledges (except for the maximun privildge right user)
+                if (SecurityManager.getConnectedAgentRight() != SecurityManager.RIGHTS_LIST.LastIndexOf(SecurityManager.RIGHT_DEUS))
+                {
+                    //an user cannot delete an account with higer or equal priviledges
+                    if (SecurityManager.getConnectedAgentRight() == agent.getRight() || !SecurityManager.rightLevelEnoughToAccesSystem(SecurityManager.getConnectedAgentRight(), agent.getRight()))
+                    {
+                        MessageBox.Show("Vous ne disposez pas des droits éditer un compte de plus haut (ou égal) privilège");
+                        return;
+                    }
+                }
+
                 res = database.updateAgent(agent);
 
                 //send mail to the user in order to notify him about the actual changes
@@ -277,9 +288,10 @@ namespace WindowsFormsApplication1.Forms
                 MessageBox.Show(message);
 
                 setListBox();//update listbox
-                setAgent(agent);//set the current agent as the selected one
+                setDefault();//reset view
 
-            }else//error
+            }
+            else//error
             {
                 MessageBox.Show("Une erreur est survenue !");
             }
