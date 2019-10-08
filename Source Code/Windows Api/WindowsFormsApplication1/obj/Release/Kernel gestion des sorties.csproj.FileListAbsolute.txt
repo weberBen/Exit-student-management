@@ -158,6 +158,9 @@ C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sort
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Newtonsoft.Json.dll
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Newtonsoft.Json.xml
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csprojAssemblyReference.cache
+C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.HtmlMessageBox.resources
+C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.StudentPhotosFolderChooser.resources
+C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.AdminSetupBox.resources
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.BrowseStudentData.resources
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.AccessManagementForm.resources
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.AutoClosingMessageBox.resources
@@ -169,6 +172,7 @@ C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sort
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsStudentsStateFile.resources
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsList.resources
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsServerElements.resources
+C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.MainForm.resources
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsLengthExitBreak.resources
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Properties.Resources.resources
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csproj.GenerateResource.cache
@@ -176,7 +180,35 @@ C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sort
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csproj.CopyComplete
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.exe
 C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.pdb
-C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.AdminSetupBox.resources
-C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.StudentPhotosFolderChooser.resources
-C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.MainForm.resources
-C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.HtmlMessageBox.resources
+C:\Users\Xavier.weber\Desktop\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.ExitRegime.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Database_Students_Management.mdf
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Database_Students_Management_log.ldf
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Kernel gestion des sorties.exe.config
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Kernel gestion des sorties.exe
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Kernel gestion des sorties.pdb
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Newtonsoft.Json.dll
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\bin\Release\Newtonsoft.Json.xml
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csprojAssemblyReference.cache
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.ExitRegime.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.HtmlMessageBox.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.StudentPhotosFolderChooser.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.AdminSetupBox.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.BrowseStudentData.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.AccessManagementForm.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.AutoClosingMessageBox.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.DatabaseSettings.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsAccessToServerFile.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsStudentPhoto.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SchoolDataForm.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SetingsMailsSender.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsStudentsStateFile.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsList.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsServerElements.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.MainForm.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsLengthExitBreak.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Properties.Resources.resources
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csproj.GenerateResource.cache
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csproj.CoreCompileInputs.cache
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csproj.CopyComplete
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.exe
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.pdb

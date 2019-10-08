@@ -12,7 +12,7 @@ public class Error
     private static string s_details = "";
     private static bool display_message = false;
     private static bool send_mail = false;
-    private static bool debug  = false;
+    public const bool debug  = false;
 
     public static string details
     {
@@ -43,10 +43,12 @@ public class Error
                     }
                 }
 
-                if(display_message)
+                if (display_message)
                 {
                     MessageBox.Show(text);
-                }else if(debug)
+                }
+
+                if(debug)
                 {
                     Console.WriteLine(text);
                 }
@@ -163,6 +165,9 @@ public class Error
             case "CSO"://Can't Serializa Object
                 correspondance += "Impossible de sauvegarder les variables paratgées entre script dans le fichier";
                 display_message = true;
+                break;
+            case "CUDFF"://can not update database from file
+                correspondance += "Impossible de mettre à jour la base de données depuis le fichier source";
                 break;
             default:
                 correspondance += "Erreur non répertoriée";

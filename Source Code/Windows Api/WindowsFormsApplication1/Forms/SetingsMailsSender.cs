@@ -19,13 +19,15 @@ namespace WindowsFormsApplication1.Forms
 
         private const string DISPLAY_PASSWORD = "password_saved";
         //avoid to set the real password in the textbox (even if it'is set for password input)
-        private int scroll_bar_index=0;
-        private bool first_time = true;
+        private int scroll_bar_index;
+        private bool first_time;
 
 
         public SetingsMailsSender()
         {
             InitializeComponent();
+            scroll_bar_index = 0;
+            first_time = true;
 
 
             Parms parms = ToolsClass.Settings.MailsSenderParameters;

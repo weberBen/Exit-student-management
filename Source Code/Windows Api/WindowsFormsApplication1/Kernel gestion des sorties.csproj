@@ -90,6 +90,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classe\SecurityManager.cs" />
+    <Compile Include="Forms\ExitRegime.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\ExitRegime.Designer.cs">
+      <DependentUpon>ExitRegime.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\HtmlMessageBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -195,6 +201,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Forms\ExitRegime.resx">
+      <DependentUpon>ExitRegime.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\HtmlMessageBox.resx">
       <DependentUpon>HtmlMessageBox.cs</DependentUpon>
     </EmbeddedResource>

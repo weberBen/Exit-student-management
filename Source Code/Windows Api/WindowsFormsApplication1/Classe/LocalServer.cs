@@ -14,6 +14,7 @@ using System.Globalization;
 using Student = ToolsClass.Tools.StudentData;
 using Agent = ToolsClass.Tools.Agent;
 using TimeSlot = ToolsClass.Tools.TimeSlot;
+using System.Windows.Forms;
 
 namespace LocalServer
 {
@@ -66,6 +67,18 @@ namespace LocalServer
         public const string GET_FILE_NAME_ERROR_SOUND = "file_name_error_sound";
         public const string GET_SCHOOL_NAME = "school_name";
         public const string GET_SAVED_REASONS_FOR_EXIT_BAN = "saved_reasons_ban";
+        public const string CHECK_SERVICE_STATE = "check_service_state";
+
+        public const int ERROR_CODE_EXTERNAL_DATABASE_OFFLINE = 1;
+        public const int ERROR_CODE_GENERAL_PURPOSE = 0;
+
+        public const int TRUE_VALUE = 1;
+        public const int FALSE_VALUE = -1;
+        public const int ERROR_VALUE = 0;
+
+
+        public const int ONLINE_SERVICE = 1;
+        public const int OFFLINE_SERVICE = -1;
 
         public string request_object { get; set; }
 
@@ -74,6 +87,8 @@ namespace LocalServer
         public string student_last_name { get; set; }
         public string student_first_name { get; set; }
         public string student_division { get; set; }
+        public string student_halfBoardDay { get; set; }
+        public string student_label_exit_regime { get; set; }
         public string student_photo { get; set; }
         public string student_photo_extension { get; set; }
         public int student_exit_authorization { get; set; }
@@ -146,6 +161,10 @@ namespace LocalServer
         public int student_scope { get; set; }
         public int division_scope { get; set; }
         public string current_date { get; set; }
+
+        public byte[] byte_array { get; set; }
+        public int service_state { get; set; }
+        public int error_code { get; set; }
     }
 
     class DynamicClass
@@ -668,7 +687,7 @@ namespace LocalServer
                                     case RequestTags.STUDENT_STATE_FILE:
                                         CertifyAccreditationLevel = SecurityManager.RIGHTS_LIST.LastIndexOf(SecurityManager.RIGHT_ADMINISTRATION);
                                         //user upload the student state file
-                                        path = Definition.PATH_TO_FOLDER_DOCUMENT + Definition.NAME_STUDENTS_STATE_FILE + json_request.extension;
+                                        path = Definition.PATH_TO_TMP_FOLDER + Definition.SEPARATOR + Path.GetRandomFileName();
                                         break;
                                     case RequestTags.UNAUTHORIZED_EXIT_SOUND_FILE:
                                         CertifyAccreditationLevel = SecurityManager.RIGHTS_LIST.LastIndexOf(SecurityManager.RIGHT_CHEF_SCHOOL_OFFICE);
@@ -681,20 +700,34 @@ namespace LocalServer
                                 {
                                     //write the file into the specific folder with a specific name (determine by the type of file uploded)
                                     File.WriteAllBytes(path, json_request.bytes_array);
-
+                                    
                                     if(json_request.type_of_uploaded_file == RequestTags.STUDENT_STATE_FILE)
                                     {
-                                        if(Tools.readStudentsStateFile()!=Definition.NO_ERROR_INT_VALUE)//update the database with the new file
+                                        
+                                        string path_error_file = Definition.PATH_TO_TMP_FOLDER + Definition.SEPARATOR + Path.GetRandomFileName();
+
+                                        //update database
+                                        int res = database.updateStudentTableFromFile(path, path_error_file);
+                                        if (res != Definition.NO_ERROR_INT_VALUE)//ask user if he wants to see logs
                                         {
                                             process_error = true;
-                                            message_to_display = "Impossible de mettre à jour la base de données depuis le fichier fourni !";
+                                            message_to_display = "Une erreur est survenue lors de la mise à jour.<br />"
+                                                + "Certaines informations sont peut-être incomplètes ou incorrectes. Dans ce cas, elles n'ont pas été prise en compte.<br />"
+                                                + "<br />Voir le fichier des logs...<br /><br />"
+                                                + File.ReadAllText(path_error_file).Replace("\n","<br/>");
+
                                         }
+                                        
+                                        File.Delete(path);
+                                        File.Delete(path_error_file);
                                     }
                                 }
-                                catch
+                                catch(Exception er)
                                 {//error while trying saving the file
                                     process_error = true;
-                                    message_to_display = "Impossible d'enregistrer le fichier";
+                                    message_to_display = "Impossible d'enregistrer le fichier : \n"+er;
+
+                                    MessageBox.Show(""+er);
                                 }
 
                             }else
@@ -780,69 +813,107 @@ namespace LocalServer
                             response.AddParm(nameof(json_request.result), Settings.ExitBanReasonsList);
                         }
                         break;
+                    case RequestTags.CHECK_SERVICE_STATE:
+                        {
+                            int service_state;
+                            if(Definition.EXTERNAL_DATABASE_OFFLINE)
+                            {
+                                service_state = RequestTags.OFFLINE_SERVICE;
+                            }
+                            else
+                            {
+                                service_state = RequestTags.ONLINE_SERVICE;
+                            }
+
+                            response.AddParm(nameof(json_request.process_error), false);
+                            response.AddParm(nameof(json_request.service_state), service_state);
+                        }
+                        break;
                     case RequestTags.GET_INFO_FROM_RFID_DOOR:
                         {
                             //client ask if the student (given by its RFID id) can leave the school
-                            bool process_error = false;
-                            string message_to_display = "";
-
-                            //get actual date and time
-                            DateTime now = DateTime.Now;
-                            DateTime now_date = DateTime.ParseExact(now.ToString("dd-MM-yyyy"), "dd-MM-yyyy", CultureInfo.InvariantCulture);//acutal date + 00:00:00
-                            int day_of_week = (int)now.DayOfWeek;
-                            TimeSpan now_time = DateTime.Now.TimeOfDay.Add(Definition.PRECISION_BEFORE_EXIT_TIME);
-                            /* We can not keep the the actual time because any humain infrastructure have strict time
-                                * In fact student could leave the school few minutes before the regular time.
-                                * Moreover, the actual time is compare to all the start time and end time of an hour inside the database (for that student)
-                                * In other words, the actual time, which we will call time, will be compare like : if( time>= start_hour_time and time<=end_hour_time)
-                                * The fact is that student can leaves the school minutes before the start time but must not leeave the school few minutes after
-                                * the end of the hour (which is really close to the start of the next study hour)
-                                * Finally, we have to add somes minutes to the actual time (and not subtract). 
-                                * In that way, the comparaison will be : if(time>= start_time - few_minutes and time<=end_time-few_minutes)
-                                * (By the way, if we subtract few minutes to the actual date te comparaison will be :
-                                *  if(time>= start_time + few_minutes and time<= end_time + few_minutes). As we see, the result is that student
-                                *  can not leave the school until few minutes after the regular hour and can leave the school even if the regular end 
-                                *  of the hour is ended)
-                            */
-
-                            Student student = database.getStudentByRFID(json_request.rfid_value);//find the corresponding student
-                            if (!student.error)
+                            bool process_error;
+                            string message_to_display;
+                            int error_code;
+                            if (Definition.EXTERNAL_DATABASE_OFFLINE)
                             {
-                                //send back data
-                                response.AddParm(nameof(json_request.student_last_name), student.lastName);
-                                response.AddParm(nameof(json_request.student_first_name), student.firstName);
-                                response.AddParm(nameof(json_request.student_division), student.division);
-                                response.AddParm(nameof(json_request.rfid_value), json_request.rfid_value);
-                                
-                                string path_photo = Tools.getStudentPhotoPath(student.lastName, student.firstName, student.division);
-                                var tuple = Tools.photoToBase64(path_photo);
-                                response.AddParm(nameof(json_request.student_photo), tuple.Item1);
-                                response.AddParm(nameof(json_request.student_photo_extension), tuple.Item1);
+                                process_error = true;
+                                message_to_display = "";
+                                error_code = RequestTags.ERROR_CODE_EXTERNAL_DATABASE_OFFLINE;
+
+                            }
+                            else
+                            {
+                                process_error = false;
+                                message_to_display = "La base de données externe n'est plus opérationnelle. \nUne maintenance est nécessaire.";
+                                error_code = RequestTags.ERROR_CODE_GENERAL_PURPOSE;
+
+                                //get actual date and time
+                                DateTime now = DateTime.Now;
+                                DateTime now_date = DateTime.ParseExact(now.ToString("dd-MM-yyyy"), "dd-MM-yyyy", CultureInfo.InvariantCulture);//acutal date + 00:00:00
+                                int day_of_week = (int)now.DayOfWeek;
+                                TimeSpan now_time = DateTime.Now.TimeOfDay.Add(Definition.PRECISION_BEFORE_EXIT_TIME);
+                                /* We can not keep the the actual time because any humain infrastructure have strict time
+                                    * In fact student could leave the school few minutes before the regular time.
+                                    * Moreover, the actual time is compare to all the start time and end time of an hour inside the database (for that student)
+                                    * In other words, the actual time, which we will call time, will be compare like : if( time>= start_hour_time and time<=end_hour_time)
+                                    * The fact is that student can leaves the school minutes before the start time but must not leeave the school few minutes after
+                                    * the end of the hour (which is really close to the start of the next study hour)
+                                    * Finally, we have to add somes minutes to the actual time (and not subtract). 
+                                    * In that way, the comparaison will be : if(time>= start_time - few_minutes and time<=end_time-few_minutes)
+                                    * (By the way, if we subtract few minutes to the actual date te comparaison will be :
+                                    *  if(time>= start_time + few_minutes and time<= end_time + few_minutes). As we see, the result is that student
+                                    *  can not leave the school until few minutes after the regular hour and can leave the school even if the regular end 
+                                    *  of the hour is ended)
+                                */
+
+                                Student student = database.getStudentByRFID(json_request.rfid_value);//find the corresponding student
+                                if (!student.error)
+                                {
+                                    //send back data
+                                    response.AddParm(nameof(json_request.student_last_name), student.lastName);
+                                    response.AddParm(nameof(json_request.student_first_name), student.firstName);
+                                    response.AddParm(nameof(json_request.student_division), student.division);
+                                    var res = Tools.isHalBoardDay(student.halfBoardDays, day_of_week);
+                                    int code;
+                                    if (res.Item1 == Definition.ERROR_INT_VALUE)
+                                        code = RequestTags.ERROR_VALUE;
+                                    else
+                                        code = (res.Item2) ? RequestTags.TRUE_VALUE : RequestTags.FALSE_VALUE;
+                                    response.AddParm(nameof(json_request.student_halfBoardDay), code);
+                                    response.AddParm(nameof(json_request.student_label_exit_regime), student.labelRegime);
+                                    response.AddParm(nameof(json_request.rfid_value), json_request.rfid_value);
+
+                                    string path_photo = Tools.getStudentPhotoPath(student.lastName, student.firstName, student.division);
+                                    var tuple = Tools.photoToBase64(path_photo);
+                                    response.AddParm(nameof(json_request.student_photo), tuple.Item1);
+                                    response.AddParm(nameof(json_request.student_photo_extension), tuple.Item1);
 
 
-                                var authorization = database.getExitCertificationForStudent(student.tableId, now_date, day_of_week, now_time);
-                                int exit_value = authorization.Item1;
-                                String exit_reason = authorization.Item2;
-                                if (exit_value == Definition.ERROR_INT_VALUE)
+                                    var authorization = database.getExitCertificationForStudent(student.tableId, now_date, day_of_week, now_time);
+                                    int exit_value = authorization.Item1;
+                                    String exit_reason = authorization.Item2;
+                                    if (exit_value == Definition.ERROR_INT_VALUE)
+                                    {
+                                        process_error = true;
+                                        message_to_display = "Une erreur est survenue sur le server";
+                                    }
+                                    else
+                                    {
+                                        response.AddParm(nameof(json_request.student_exit_authorization), exit_value);
+                                        response.AddParm(nameof(json_request.text_reason), exit_reason);
+                                    }
+                                }
+                                else
                                 {
                                     process_error = true;
                                     message_to_display = "Une erreur est survenue sur le server";
                                 }
-                                else
-                                {
-                                    response.AddParm(nameof(json_request.student_exit_authorization), exit_value);
-                                    response.AddParm(nameof(json_request.text_reason), exit_reason);
-                                }
                             }
-                            else
-                            {
-                                process_error = true;
-                                message_to_display = "Une erreur est survenue sur le server";
-                            }
-
 
                             response.AddParm(nameof(json_request.process_error), process_error);
                             response.AddParm(nameof(json_request.message_to_display), message_to_display);
+                            response.AddParm(nameof(json_request.error_code), error_code);
 
                             break;
                         }

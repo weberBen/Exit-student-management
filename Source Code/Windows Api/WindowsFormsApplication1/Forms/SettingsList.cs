@@ -14,12 +14,15 @@ namespace WindowsFormsApplication1.Forms
     public partial class SettingsList : Form
     {
         /*Show a listBow to the user in order to let him enter informations as list */
-        private List<string> data = new List<string>();
-        private string use = "";
+        private List<string> data;
+        private string use;
 
         public SettingsList(string useFor="")
         {
             InitializeComponent();
+            use = "";
+            data = new List<string>();
+
 
             use = useFor;
 

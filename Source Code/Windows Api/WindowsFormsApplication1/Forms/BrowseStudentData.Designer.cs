@@ -40,6 +40,8 @@
             this.last_name_textBox = new System.Windows.Forms.TextBox();
             this.change_photo_button = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.exit_regime_textBox = new System.Windows.Forms.TextBox();
+            this.textBox9 = new System.Windows.Forms.TextBox();
             this.sunday_textBox = new System.Windows.Forms.TextBox();
             this.delete_student_button = new System.Windows.Forms.Button();
             this.saturday_textBox = new System.Windows.Forms.TextBox();
@@ -168,6 +170,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.exit_regime_textBox);
+            this.groupBox1.Controls.Add(this.textBox9);
             this.groupBox1.Controls.Add(this.sunday_textBox);
             this.groupBox1.Controls.Add(this.delete_student_button);
             this.groupBox1.Controls.Add(this.saturday_textBox);
@@ -193,10 +197,30 @@
             this.groupBox1.Controls.Add(this.last_name_textBox);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(637, 337);
+            this.groupBox1.Size = new System.Drawing.Size(637, 378);
             this.groupBox1.TabIndex = 10;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Elève";
+            // 
+            // exit_regime_textBox
+            // 
+            this.exit_regime_textBox.Enabled = false;
+            this.exit_regime_textBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.exit_regime_textBox.Location = new System.Drawing.Point(310, 256);
+            this.exit_regime_textBox.Name = "exit_regime_textBox";
+            this.exit_regime_textBox.Size = new System.Drawing.Size(295, 23);
+            this.exit_regime_textBox.TabIndex = 29;
+            // 
+            // textBox9
+            // 
+            this.textBox9.Enabled = false;
+            this.textBox9.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox9.Location = new System.Drawing.Point(171, 253);
+            this.textBox9.Multiline = true;
+            this.textBox9.Name = "textBox9";
+            this.textBox9.Size = new System.Drawing.Size(101, 26);
+            this.textBox9.TabIndex = 30;
+            this.textBox9.Text = "Régime Sortie :";
             // 
             // sunday_textBox
             // 
@@ -211,7 +235,7 @@
             // delete_student_button
             // 
             this.delete_student_button.BackColor = System.Drawing.Color.LightCoral;
-            this.delete_student_button.Location = new System.Drawing.Point(21, 295);
+            this.delete_student_button.Location = new System.Drawing.Point(6, 315);
             this.delete_student_button.Name = "delete_student_button";
             this.delete_student_button.Size = new System.Drawing.Size(118, 36);
             this.delete_student_button.TabIndex = 27;
@@ -292,7 +316,7 @@
             // 
             // cancel_student_data_button
             // 
-            this.cancel_student_data_button.Location = new System.Drawing.Point(366, 295);
+            this.cancel_student_data_button.Location = new System.Drawing.Point(366, 336);
             this.cancel_student_data_button.Name = "cancel_student_data_button";
             this.cancel_student_data_button.Size = new System.Drawing.Size(118, 36);
             this.cancel_student_data_button.TabIndex = 13;
@@ -302,7 +326,7 @@
             // 
             // save_student_data_button
             // 
-            this.save_student_data_button.Location = new System.Drawing.Point(513, 295);
+            this.save_student_data_button.Location = new System.Drawing.Point(513, 336);
             this.save_student_data_button.Name = "save_student_data_button";
             this.save_student_data_button.Size = new System.Drawing.Size(118, 36);
             this.save_student_data_button.TabIndex = 12;
@@ -313,7 +337,7 @@
             // rfid_id_textBox
             // 
             this.rfid_id_textBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rfid_id_textBox.Location = new System.Drawing.Point(310, 256);
+            this.rfid_id_textBox.Location = new System.Drawing.Point(310, 298);
             this.rfid_id_textBox.Name = "rfid_id_textBox";
             this.rfid_id_textBox.Size = new System.Drawing.Size(295, 23);
             this.rfid_id_textBox.TabIndex = 1;
@@ -324,7 +348,7 @@
             // 
             this.textBox5.Enabled = false;
             this.textBox5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox5.Location = new System.Drawing.Point(171, 253);
+            this.textBox5.Location = new System.Drawing.Point(171, 295);
             this.textBox5.Multiline = true;
             this.textBox5.Name = "textBox5";
             this.textBox5.Size = new System.Drawing.Size(101, 26);
@@ -358,7 +382,7 @@
             this.groupBox2.Controls.Add(this.textBox7);
             this.groupBox2.Controls.Add(this.search_textBox);
             this.groupBox2.Controls.Add(this.listBox);
-            this.groupBox2.Location = new System.Drawing.Point(12, 355);
+            this.groupBox2.Location = new System.Drawing.Point(12, 396);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(637, 300);
             this.groupBox2.TabIndex = 14;
@@ -388,7 +412,7 @@
             // 
             // end_button
             // 
-            this.end_button.Location = new System.Drawing.Point(577, 673);
+            this.end_button.Location = new System.Drawing.Point(580, 713);
             this.end_button.Name = "end_button";
             this.end_button.Size = new System.Drawing.Size(118, 36);
             this.end_button.TabIndex = 15;
@@ -400,7 +424,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(710, 721);
+            this.ClientSize = new System.Drawing.Size(710, 752);
             this.Controls.Add(this.end_button);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -450,5 +474,7 @@
         private System.Windows.Forms.Button delete_student_button;
         private System.Windows.Forms.Button fuson_button;
         private System.Windows.Forms.TextBox sunday_textBox;
+        private System.Windows.Forms.TextBox exit_regime_textBox;
+        private System.Windows.Forms.TextBox textBox9;
     }
 }

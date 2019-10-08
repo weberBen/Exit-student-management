@@ -14,11 +14,14 @@ namespace WindowsFormsApplication1.Forms
     {
         private static Timer timer;
 
-        private bool answer = false;
+        private bool answer;
 
         public AutoClosingMessageBox(string title, string message, int timeout, string text_button_ok="Oui", string text_button_cancel="Quiter")
         {
             InitializeComponent();
+            answer = false;
+
+
             this.Text = title;
             this.message_textBox.Text = message;
             this.ok_button.Text = text_button_ok;

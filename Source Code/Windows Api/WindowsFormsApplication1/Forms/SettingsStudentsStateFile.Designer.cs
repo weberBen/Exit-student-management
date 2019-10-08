@@ -47,6 +47,8 @@
             this.shortname_female_textBox = new System.Windows.Forms.TextBox();
             this.shortname_male_textBox = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.textBox15 = new System.Windows.Forms.TextBox();
+            this.exit_regime_textBox = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.sun_textBox = new System.Windows.Forms.TextBox();
@@ -69,10 +71,15 @@
             this.display_path_textBox = new System.Windows.Forms.TextBox();
             this.remove_selected_file_button = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.encapsulation_checkBox = new System.Windows.Forms.CheckBox();
+            this.textBox19 = new System.Windows.Forms.TextBox();
+            this.separator_csv_textBox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // textBox1
@@ -83,7 +90,7 @@
             this.textBox1.Location = new System.Drawing.Point(12, 12);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(482, 104);
+            this.textBox1.Size = new System.Drawing.Size(732, 104);
             this.textBox1.TabIndex = 0;
             this.textBox1.Text = resources.GetString("textBox1.Text");
             // 
@@ -189,7 +196,7 @@
             // 
             // save_button
             // 
-            this.save_button.Location = new System.Drawing.Point(421, 584);
+            this.save_button.Location = new System.Drawing.Point(682, 605);
             this.save_button.Name = "save_button";
             this.save_button.Size = new System.Drawing.Size(91, 36);
             this.save_button.TabIndex = 11;
@@ -199,7 +206,7 @@
             // 
             // cancel_button
             // 
-            this.cancel_button.Location = new System.Drawing.Point(295, 584);
+            this.cancel_button.Location = new System.Drawing.Point(556, 605);
             this.cancel_button.Name = "cancel_button";
             this.cancel_button.Size = new System.Drawing.Size(91, 36);
             this.cancel_button.TabIndex = 12;
@@ -249,6 +256,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.textBox15);
+            this.groupBox1.Controls.Add(this.exit_regime_textBox);
             this.groupBox1.Controls.Add(this.textBox6);
             this.groupBox1.Controls.Add(this.last_name_textBox);
             this.groupBox1.Controls.Add(this.first_name_textBox);
@@ -261,10 +270,29 @@
             this.groupBox1.Controls.Add(this.textBox3);
             this.groupBox1.Location = new System.Drawing.Point(12, 138);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(264, 174);
+            this.groupBox1.Size = new System.Drawing.Size(500, 174);
             this.groupBox1.TabIndex = 17;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Index colonnes";
+            // 
+            // textBox15
+            // 
+            this.textBox15.Enabled = false;
+            this.textBox15.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox15.Location = new System.Drawing.Point(270, 23);
+            this.textBox15.Name = "textBox15";
+            this.textBox15.Size = new System.Drawing.Size(155, 23);
+            this.textBox15.TabIndex = 12;
+            this.textBox15.Text = "*Nom";
+            // 
+            // exit_regime_textBox
+            // 
+            this.exit_regime_textBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.exit_regime_textBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.exit_regime_textBox.Location = new System.Drawing.Point(440, 23);
+            this.exit_regime_textBox.Name = "exit_regime_textBox";
+            this.exit_regime_textBox.Size = new System.Drawing.Size(49, 23);
+            this.exit_regime_textBox.TabIndex = 11;
             // 
             // groupBox2
             // 
@@ -272,9 +300,9 @@
             this.groupBox2.Controls.Add(this.textBox8);
             this.groupBox2.Controls.Add(this.shortname_male_textBox);
             this.groupBox2.Controls.Add(this.shortname_female_textBox);
-            this.groupBox2.Location = new System.Drawing.Point(288, 142);
+            this.groupBox2.Location = new System.Drawing.Point(282, 333);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(224, 170);
+            this.groupBox2.Size = new System.Drawing.Size(224, 234);
             this.groupBox2.TabIndex = 18;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Abréviations sexe utilisées";
@@ -496,18 +524,63 @@
             this.groupBox4.Controls.Add(this.browse_files_button);
             this.groupBox4.Controls.Add(this.remove_selected_file_button);
             this.groupBox4.Controls.Add(this.display_path_textBox);
-            this.groupBox4.Location = new System.Drawing.Point(295, 318);
+            this.groupBox4.Location = new System.Drawing.Point(527, 344);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(217, 223);
             this.groupBox4.TabIndex = 27;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Fichier source";
             // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.encapsulation_checkBox);
+            this.groupBox5.Controls.Add(this.textBox19);
+            this.groupBox5.Controls.Add(this.separator_csv_textBox);
+            this.groupBox5.Location = new System.Drawing.Point(527, 142);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(217, 170);
+            this.groupBox5.TabIndex = 28;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "Paramètres CSV";
+            // 
+            // encapsulation_checkBox
+            // 
+            this.encapsulation_checkBox.AutoSize = true;
+            this.encapsulation_checkBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.encapsulation_checkBox.Location = new System.Drawing.Point(7, 77);
+            this.encapsulation_checkBox.Name = "encapsulation_checkBox";
+            this.encapsulation_checkBox.Size = new System.Drawing.Size(168, 21);
+            this.encapsulation_checkBox.TabIndex = 9;
+            this.encapsulation_checkBox.Text = "Encapsulation (\"data\")";
+            this.encapsulation_checkBox.UseVisualStyleBackColor = true;
+            // 
+            // textBox19
+            // 
+            this.textBox19.Enabled = false;
+            this.textBox19.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox19.Location = new System.Drawing.Point(6, 30);
+            this.textBox19.Name = "textBox19";
+            this.textBox19.Size = new System.Drawing.Size(114, 23);
+            this.textBox19.TabIndex = 8;
+            this.textBox19.Text = "*Délimitateur";
+            // 
+            // separator_csv_textBox
+            // 
+            this.separator_csv_textBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.separator_csv_textBox.ForeColor = System.Drawing.SystemColors.WindowText;
+            this.separator_csv_textBox.Location = new System.Drawing.Point(126, 30);
+            this.separator_csv_textBox.Name = "separator_csv_textBox";
+            this.separator_csv_textBox.Size = new System.Drawing.Size(49, 23);
+            this.separator_csv_textBox.TabIndex = 7;
+            this.separator_csv_textBox.Click += new System.EventHandler(this.separator_csv_textBox_Click);
+            this.separator_csv_textBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.separator_csv_textBox_KeyPress);
+            // 
             // SettingsStudentsStateFile
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(523, 632);
+            this.ClientSize = new System.Drawing.Size(785, 653);
+            this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
@@ -527,6 +600,8 @@
             this.groupBox3.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -574,5 +649,11 @@
         private System.Windows.Forms.TextBox sun_textBox;
         private System.Windows.Forms.TextBox textBox18;
         private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.TextBox textBox15;
+        private System.Windows.Forms.TextBox exit_regime_textBox;
+        private System.Windows.Forms.GroupBox groupBox5;
+        private System.Windows.Forms.CheckBox encapsulation_checkBox;
+        private System.Windows.Forms.TextBox textBox19;
+        private System.Windows.Forms.TextBox separator_csv_textBox;
     }
 }

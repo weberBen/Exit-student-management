@@ -16,6 +16,11 @@ class GlobalDefinition {
 	static get AJAX_DOWNLOAD_FILE () {return "downloadFile.ashx?downloadFile=";}
 	static get AJAX_AUDIO_FILE () {return "play.aspx?s=";}
 	
+	static get TRUE_VALUE () { return 1;}
+	static get FALSE_VALUE () { return -1;}
+	static get ERROR_VALUE () { return 0;}
+		
+		
 	static get NAME_DEFAULT_PHOTO () { return "default_student_photo.png";}
 	static get NAME_DIVISION_PHOTO () { return "student_division_image.png";}
 	static get DEFAULT_PHOTO() { return this.AJAX_IMAGE + this.NAME_DEFAULT_PHOTO; }
@@ -66,6 +71,7 @@ class GlobalDefinition {
 	static get FILE_NAME_USER_ACCOUNT_HTML_CONTENT() { return "user_account_content.html"; }
 	
 	static get FILE_NAME_LICENCE() { return "Informations_legales.zip"; }
+	static get REQUEST_BYTE_ARRAY() { return "byte_array"; }
 	
 	static get REQUEST_SYSTEM_INSTRUCTIONS() { return "system_instructions"; }
 	static get REQUEST_RELOAD_CLIENT_PAGE() { return "reload_client_page"; }
@@ -107,6 +113,9 @@ class GlobalDefinition {
 	static get REQUEST_STUDENT_TABLE_ID () {return "student_table_id";}
 	static get REQUEST_STUDENT_LAST_NAME () {return "student_last_name";}
 	static get REQUEST_STUDENT_FISRT_NAME () {return "student_first_name";}
+	static get REQUEST_STUDENT_DIVISION () {return "student_division";}
+	static get REQUEST_STUDENT_HALF_BOARD_DAY () {return "student_halfBoardDay";}
+	static get REQUEST_STUDENT_LABEL_EXIT_REGIME () {return "student_label_exit_regime";}
 	static get REQUEST_STUDENT_DIVISION () {return "student_division";}
 	static get REQUEST_STUDENT_PHOTO () {return "student_photo";}
 	static get REQUEST_STUDENT_PHOTO_EXTENSION () {return "student_photo_extension";}
@@ -198,7 +207,15 @@ class GlobalDefinition {
 	
 	static get REQUEST_GET_SAVED_REASONS_FOR_EXIT_BAN () {return "saved_reasons_ban";}
 	
+	static get REQUEST_SERVICE_STATE () {return "service_state";}
+	static get REQUEST_ERROR_CODE () {return "error_code";}
+	static get REQUEST_CHECK_SERVICE_STATE () {return "check_service_state";}
+	
+	static get ONLINE_SERVICE () {return 1;}
+	static get OFFLINE_SERVICE () {return -1;}
+	static get REQUEST_ERROR_CODE_EXTERNAL_DATABASE_OFFLINE () {return 1;}
 }
+
 
 var DataRequest =(
 
@@ -309,6 +326,14 @@ var DataRequest =(
 			  data[GlobalDefinition.REQUEST_TAG_RFID_VALUE]=rfid_value;
 			  return JSON.stringify(data);
             },
+			
+		   setCheckServiceRequest : function() //get the current list (like read only)
+            {
+              var data = {};
+			  data[GlobalDefinition.REQUEST_OBJECT_TAG] = GlobalDefinition.REQUEST_CHECK_SERVICE_STATE;
+			  return JSON.stringify(data);
+            },
+			
 			
 		  setCertifiedConnection : function(user_id, user_password)
 		  {
@@ -815,7 +840,7 @@ var DataRequest =(
 					this.timer = 0;
 				 }
 				 
-				 
+				
 				this.numberLoop=0;
 				this.isDeleting = false;
 				this.el.innerHTML="";

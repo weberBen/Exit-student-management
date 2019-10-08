@@ -12,15 +12,21 @@ namespace WindowsFormsApplication1.Forms
 {
     partial class AdminSetupBox : Form
     {
-        public String admin_lastName = null;
-        public String admin_firstName = null;
-        public String admin_id = null;
-        public SecureString admin_password = null;
+        public string admin_lastName ;
+        public string admin_firstName;
+        public string admin_id;
+        public SecureString admin_password;
 
         public AdminSetupBox()
         {
             InitializeComponent();
-            info_password_textBox.Text = ToolsClass.Definition.INCORRECT_PASSWORD_FORMAT_TEXT;
+            admin_lastName = null;
+            admin_firstName = null;
+            admin_id = null;
+            admin_password = null;
+
+
+        info_password_textBox.Text = ToolsClass.Definition.INCORRECT_PASSWORD_FORMAT_TEXT;
         }
 
         #region Accesseurs d'attribut de l'assembly

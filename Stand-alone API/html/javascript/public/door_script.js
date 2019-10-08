@@ -17,6 +17,8 @@ var DoorScript = (function() {
 	const TIMEOUT=5000;//ms
 	const REFRESH_TIME = 60000; //60ms
 	
+	const MAX_CHAR_SHOWN_TEXT_REASON = 50
+	
 	var rfid_input_value; 
 	var clock_timer;
 	var audio_player;
@@ -24,6 +26,7 @@ var DoorScript = (function() {
 	var tab_rfid_char=[];
 	
 	var element_focus_out;
+	var element_display_id;
 	
 	var RfidHandler = (function() {
 	
@@ -81,10 +84,17 @@ var DoorScript = (function() {
 		  {
 			  var data = JSON.parse(response);
 			  DataRequest.getSystemInstructions(data);//manage system instructions
-
+			  
 			  if(data[GlobalDefinition.REQUEST_PROCESS_ERROR]==true)
 			  { 
-				  setGraphicView(HtmlColorError,text_error); 
+				  if(data[GlobalDefinition.REQUEST_ERROR_CODE]==GlobalDefinition.REQUEST_ERROR_CODE_EXTERNAL_DATABASE_OFFLINE)
+				  {
+					DoorScript.destroy();
+					MainMenu.displayOfflineServicePage();
+				  }else
+				  {
+					setGraphicView(HtmlColorError,text_error); 
+				  }
 				  
 			  }else if(data[GlobalDefinition.REQUEST_OBJECT_TAG] == GlobalDefinition.REQUEST_TAG_RFID_DOOR)
 			  {
@@ -95,18 +105,23 @@ var DoorScript = (function() {
 				  }
 
 				  stopTimer();//stop timer
-				  
 
 				  var last_name = data[GlobalDefinition.REQUEST_STUDENT_LAST_NAME];
 				  var first_name = data[GlobalDefinition.REQUEST_STUDENT_FISRT_NAME];
 				  var division = data[GlobalDefinition.REQUEST_STUDENT_DIVISION];
+				  var halfBoardDay = data[GlobalDefinition.REQUEST_STUDENT_HALF_BOARD_DAY];
+				  var exit_regime = data[GlobalDefinition.REQUEST_STUDENT_LABEL_EXIT_REGIME];
 				  var file_photo = data[GlobalDefinition.REQUEST_STUDENT_PHOTO];
 				  var extension_photo =  data[GlobalDefinition.REQUEST_STUDENT_PHOTO_EXTENSION];
 				  var exit_authorization = data[GlobalDefinition.REQUEST_STUDENT_EXIT_AUTHORIZATION];
-				  
+				  var exit_reason = data[GlobalDefinition.REQUEST_TEXT_REASON];
+				  if(exit_reason.length>MAX_CHAR_SHOWN_TEXT_REASON)
+				  {
+					  exit_reason =  exit_reason.substring(0,MAX_CHAR_SHOWN_TEXT_REASON) + "...";
+				  }
 				  
 				  if (last_name == "" || first_name == "" || division == "") 
-				  {	  
+				  {
 					resetRfidInput();
 					setGraphicView(HtmlColorNoExit,text_no_matche, play_song=true); 
 					
@@ -141,7 +156,8 @@ var DoorScript = (function() {
 						  break  
 						  
 					  }
-					  setGraphicView(background_color,text_to_display, play_song, last_name, first_name, division, file_photo, extension_photo);   
+					  
+					  setGraphicView(background_color,text_to_display +"<br/>"+exit_reason, play_song, last_name, first_name, division, halfBoardDay, exit_regime, file_photo, extension_photo);   
 				  }
 				  
 				  work_in_process = false;
@@ -149,7 +165,6 @@ var DoorScript = (function() {
 			  
 		  }catch(e){}
 		}
-		  
 		
 		return {
 			
@@ -182,7 +197,7 @@ var DoorScript = (function() {
 				rfid_value = value;
 				start = Date.now();
 				
-				var data =DataRequest.setRfidRequestForDoor(rfid_value);
+				var data = DataRequest.setRfidRequestForDoor(rfid_value);
 				DataRequest.sendPostRequest(data, setChange);
 				  
 				request_timer = setTimeout(requestTimeoutHandler, TIMEOUT);
@@ -203,6 +218,11 @@ var DoorScript = (function() {
 						return true;
 					}
 				}
+			},
+			
+			resetParms :  function()
+			{
+				resetParms();
 			}
 			
 		
@@ -212,16 +232,36 @@ var DoorScript = (function() {
 
     
 	
-	function setGraphicView(background_color, header_text, play_song=false, last_name="",first_name="", division="", file_photo="", extension_photo="")
+	function setGraphicView(background_color, header_text, play_song=false, last_name="",first_name="", division="", halBoardDay="", exit_regime="", file_photo="", extension_photo="")
 	{
-		
 		document.getElementById('display_exit_result').style.backgroundColor = background_color;
 		document.getElementById('display_exit_result').innerHTML = header_text;
-
+		jQuery("#display_exit_result").fitText(1.1, { minFontSize: '10px', maxFontSize: '35px' });
 
 		document.getElementById('nom_eleve').innerHTML = last_name;
 		document.getElementById('prenom_eleve').innerHTML = first_name;
 		document.getElementById('classe_eleve').innerHTML = division;
+		
+		lunch_regime = "";
+		if(halBoardDay==GlobalDefinition.TRUE_VALUE)
+		{
+			lunch_regime = "DP";
+		}else if(halBoardDay==GlobalDefinition.FALSE_VALUE)
+		{
+			lunch_regime = "Ext";
+		}else
+		{
+			lunch_regime = "";
+		}
+		document.getElementById('lunch_regime').innerHTML = lunch_regime;
+		
+		
+		if(exit_regime==null)
+		{
+			exit_regime = "";
+		}
+		document.getElementById('exit_regime').innerHTML = exit_regime;
+		
 		if(file_photo!="")
 		{
 			document.getElementById('photo_eleve').src = "data:image/"+extension_photo+";base64," + file_photo;
@@ -239,6 +279,7 @@ var DoorScript = (function() {
 	function resetView()
 	{
 		setGraphicView("#ffffff", "");
+		resetRfidInput();
 	}
 	
 	function updateTime() {
@@ -330,7 +371,7 @@ var DoorScript = (function() {
            keynum = e.which;
       }
 	  
-	  RfidNewInput(String.fromCharCode(keynum));
+	  RfidNewInput(keynum);
 
 	  e.preventDefault();//stop key down because few rfid tag can trigger event on the page
 	  return false;
@@ -339,24 +380,38 @@ var DoorScript = (function() {
 	function resetRfidInput()
 	{
 		tab_rfid_char = [];
+		element_display_id.innerHTML = tabCharToString(tab_rfid_char);
 	}
 	
-	
-	function RfidNewInput (character) 
+	function tabCharToString(tab, length=tab.length)
 	{
+		var string ="";
+		for(var i=0; i<length;i++)
+		{
+			string = string + tab_rfid_char[i]; 
+		}
+		
+		return string;
+	}
+	
+	function RfidNewInput(keynum) 
+	{
+	  if(keynum==13)//return or enter key (send by the quite few rfdi reader at the end of the string send)
+	  {
+	    resetRfidInput();
+		return;
+	  }
+	  var character = String.fromCharCode(keynum);
+	  
+	  
 	  if(!RfidHandler.InProcess())
 	  {
 		  tab_rfid_char.push(character);
+		  element_display_id.innerHTML = tabCharToString(tab_rfid_char);
 		  //rfid_input_value = rfid_input_value + character
 		  if(tab_rfid_char.length == GlobalDefinition.LENGTH_RFID_ID)
-		  {  
-			  var s_rfid ="";
-			  for(var i=0; i<GlobalDefinition.LENGTH_RFID_ID;i++)
-			  {
-				s_rfid = s_rfid + tab_rfid_char[i]; 
-			  }
-			  
-			  RfidHandler.setRfid(s_rfid);
+		  {
+			  RfidHandler.setRfid( tabCharToString(tab_rfid_char,GlobalDefinition.LENGTH_RFID_ID) );
 			  resetRfidInput();
 		  }
 	  }else
@@ -396,13 +451,39 @@ var DoorScript = (function() {
 		resetRfidInput();
 	}
 	
+	function setChange(response)
+		{
+			
+		  try 
+		  {
+			  var data = JSON.parse(response);
+			  DataRequest.getSystemInstructions(data);//manage system instructions
+			  
+			  if(data[GlobalDefinition.REQUEST_OBJECT_TAG] == GlobalDefinition.REQUEST_CHECK_SERVICE_STATE)
+			  {
+					if(data[GlobalDefinition.REQUEST_SERVICE_STATE]!= GlobalDefinition.ONLINE_SERVICE)
+					{
+						DoorScript.destroy();
+						MainMenu.displayOfflineServicePage();
+					}
+			  }
+			  
+		  }catch(e){}
+		}
+		  
+		  
+
     return {
         
 		initialize : function ()
-		{
+		{	
+			var data = DataRequest.setCheckServiceRequest();
+			DataRequest.sendPostRequest(data, setChange);
+			
 			rfid_input_value ="";
 			tab_rfid_char=[];
 			element_focus_out = document.getElementById("button_focus_out");
+			element_display_id =  document.getElementById("span_student_id");
 	
 			updateTime();
 			//if previous listener was added, them each input char will be registered multiple time

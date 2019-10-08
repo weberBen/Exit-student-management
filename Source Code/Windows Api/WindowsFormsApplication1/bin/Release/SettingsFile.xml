@@ -10,7 +10,6 @@
   <field name="Path_url_acess_file" Path_url_acess_file=""></field>
   <field name="School_name" School_name=""></field>
   <field name="Error_audio_name" Error_audio_name="error_audio.mp3"></field>
-  <field name="Student_state_file" Student_state_file="regime_students.csv"></field>
   <div name="Exit_ban_reasons_list"></div>
   <div name="List_correspondance_columns_state_student_file">
     <item name="Last_name"></item>
@@ -28,17 +27,18 @@
     <item name="Sat"></item>
     <item name="Sun"></item>
     <item name="Separator_days"></item>
+    <item name="Exit_regime"></item>
+    <item name="Separator_csv"></item>
+    <item name="Encapsulation_quote"></item>
   </div>
   <div name="Student_photo_parms">
     <item name="Order_element"></item>
     <item name="Format_element"></item>
     <item name="Separator"></item>
   </div>
-  <div name="School_days">
-  </div>
+  <div name="School_days"></div>
   <field name="Lunch_time" Lunch_time=""></field>
-  <div name="Study_time">
-  </div>
+  <div name="Study_time"></div>
   <div name="List_parameters_for_mails_sender">
     <item name="Mail_adress"></item>
     <item name="Password"></item>
@@ -51,4 +51,6 @@
   <field name="Length_exit_break" Length_exit_break=""></field>
   <field name="Length_rfid_id" Length_rfid_id=""></field>
   <field name="Date_last_suppression_from_database" Date_last_suppression_from_database=""></field>
+  <field name="Named_pipe" Named_pipe="StudentManagmentNamedPipe"></field>
+  <field name="Exit_regime_activation_state" Exit_regime_activation_state="0"></field>
 </Settings>

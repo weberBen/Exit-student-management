@@ -21,12 +21,12 @@ namespace WindowsFormsApplication1.Forms
         private const string SHORT_ID_TAG = "0000";
         private Color CUSTOM_RED = Color.FromArgb(255, 179, 179);
         private Color CUSTOM_GREEN = Color.FromArgb(179, 255, 179);
-        private Color DEFAULT_COLOR; 
+        private Color DEFAULT_COLOR;
 
-        private List<int> list_ids = new List<int>();
-        private List<string> list_results = new List<string>();
-
-        private DataBase database = new DataBase();
+        private List<int> list_ids;
+        private List<string> list_results;
+        
+        private DataBase database;
         private Agent agent;
         private string old_mail_adress;
 
@@ -35,6 +35,10 @@ namespace WindowsFormsApplication1.Forms
         public AccessManagementForm()
         {
             InitializeComponent();
+            list_ids = new List<int>();
+            list_results = new List<string>();
+            database = new DataBase();
+
 
             DEFAULT_COLOR = display_password_state_textBox.BackColor;
             agent.toDefault();

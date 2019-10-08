@@ -35,6 +35,8 @@ using WindowsFormsApplication1.Forms;
 using System.Timers;
 using System.Security;
 using ToolsClass;
+using System.Collections.Generic;
+using System.IO.Pipes;
 
 //4e47cf6kp4XP5zuw1dQ6epCoMjOPgMvc42qgT
 /*fonction a modifier pour le site web :
@@ -48,29 +50,91 @@ namespace WindowsFormsApplication1
 public partial class MainForm : Form
 {
     
-        LocalServer.HttpServer LocalServer = new LocalServer.HttpServer(); //class that deal with the local server
+    LocalServer.HttpServer LocalServer = new LocalServer.HttpServer(); //class that deal with the local server
 
-        private const int TIME_OUT_VALUE = 30000; //ms
-        private Color CUSTOM_RED = Color.FromArgb(251, 80, 80);
-        private Color CUSTOM_GREEN = Color.FromArgb(179, 255, 179);
-        private Color CUSTOM_ORANGE = Color.FromArgb(255, 140, 26);
-        private System.Windows.Forms.Timer timer = null;
-        private const int TIMER_TIME_MINUTES = 2880; //48h
+    private const int TIME_OUT_VALUE = 30000; //ms
+    private Color CUSTOM_RED = Color.FromArgb(251, 80, 80);
+    private Color CUSTOM_GREEN = Color.FromArgb(179, 255, 179);
+    private Color CUSTOM_ORANGE = Color.FromArgb(255, 140, 26);
+    private System.Windows.Forms.Timer timer = null;
+    private const int TIMER_TIME_MINUTES = 2880; //48h
 
-        private TextBox banner = null;
-        private string actual_text_banner;
-        private Color actual_color_banner;
-       
+    private TextBox banner = null;
+    private string actual_text_banner;
+    private Color actual_color_banner;
 
-        public MainForm()
+    private Boolean close_named_piped = false;
+
+
+    private void closeNamedPipe()
+    {
+        this.close_named_piped = true;
+    }
+
+    private void startNamedPipe()
+    {
+            //start new thread
+            Task.Factory.StartNew(() =>
+            {
+
+                using (NamedPipeServerStream pipeServer = new NamedPipeServerStream(Definition.NAMED_PIPE, PipeDirection.InOut))
+                {
+                    // Wait for a client to connect
+                    pipeServer.WaitForConnection();
+                    //client connected
+
+                    try
+                    {
+                        // Read user input and send that to the client process.
+                        using (BinaryReader br = new BinaryReader(pipeServer))
+                        {
+                            Boolean exit = false;
+                            while (!exit)
+                            {
+                                if (this.close_named_piped)
+                                {
+                                    exit = true;
+                                    break;
+                                }
+
+                                var len = (int)br.ReadUInt32();            // Read string length
+                                var str = new string(br.ReadChars(len));    // Read string
+
+                                switch(str)
+                                {
+                                    case "error":
+                                        Definition.EXTERNAL_DATABASE_OFFLINE = true;
+                                        break;
+                                    case "online":
+                                        Definition.EXTERNAL_DATABASE_OFFLINE = false;
+                                        break;
+                                    case "exit":
+                                        exit = true;
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    // Catch the IOException that is raised if the pipe is broken
+                    // or disconnected.
+                    catch (IOException e)
+                    {
+                        Definition.EXTERNAL_DATABASE_OFFLINE = true;
+                        startNamedPipe();//if the server has interrupted the pipe then start listening to it again
+                    }
+                }
+
+            });
+        }
+
+    public MainForm()
         {
             InitializeComponent();
             banner = this.displayEventTextBox;
-
-
+            
             updateComputerTableId();
             EmptyAdmin(); //check if it's needed to set a new admi
-
+            startNamedPipe();
 
             this.displayEventTextBox.TextAlign = HorizontalAlignment.Center;
             this.FormClosing += this.form_OnClosing;//event handler on form closing
@@ -128,6 +192,8 @@ public partial class MainForm : Form
             timer.Tick += new EventHandler(timerTick);
             timer.Interval = TIMER_TIME_MINUTES*60*1000;//into ms
             timer.Start();
+
+            //run_cmd();
         }
 
         private void timerTick(object source, EventArgs e)
@@ -137,13 +203,19 @@ public partial class MainForm : Form
             timer.Start();
         }
 
+        private void disposeObject()
+        {
+            closeNamedPipe();
+            LocalServer.Dispose();
+        }
+
         private void form_OnClosing(Object sender, FormClosingEventArgs e)
         {
             changeBanner("Fermeture du serveur en cours", CUSTOM_ORANGE);
 
             timer.Stop();
 
-            Task t = Task.Run(() => LocalServer.Dispose()); //wait for the closing of the local server
+            Task t = Task.Run(() => disposeObject()); //wait for the closing of the local server
             t.Wait(TimeSpan.FromMilliseconds(TIME_OUT_VALUE));
         }
         
@@ -254,6 +326,13 @@ public partial class MainForm : Form
             changeBanner("Nettoyage des log" + Environment.NewLine + "Veuillez patienter...", Color.DarkOrange);
             //clear log file
             File.WriteAllText(Definition.PATH_TO_LOG_ERROR_FILE, "");
+
+            DirectoryInfo di = new DirectoryInfo(Definition.PATH_TO_TMP_FOLDER);
+            foreach (FileInfo file in di.GetFiles())
+            {
+                try{ file.Delete(); }catch { }//delete file if not used by another process
+            }
+
 
             bannerToPreviousState();
         }
@@ -384,45 +463,33 @@ public partial class MainForm : Form
 
                 //get the first parent of the submenu
 
-                ToolStripItem source_item = clicked_menu_item.OwnerItem;
-                while (source_item.OwnerItem != null)
+                if (!Error.debug)
                 {
-                    source_item = source_item.OwnerItem;
-                }
-
-                int needed_right = SecurityManager.RIGHTS_LIST.LastIndexOf(source_item.Tag.ToString());
-                if (!SecurityManager.rightLevelEnoughToAccesSystem(SecurityManager.getConnectedAgentRight(), needed_right))
-                {
-                    if (SecurityManager.getFormatedSessionInfo() == "")
+                    ToolStripItem source_item = clicked_menu_item.OwnerItem;
+                    while (source_item.OwnerItem != null)
                     {
-                        endPreviousSession();
+                        source_item = source_item.OwnerItem;
                     }
-                    MessageBox.Show("Vous n'avez pas les droits nécessaires pour accéder à cette option");
-                    return;
+
+                    int needed_right = SecurityManager.RIGHTS_LIST.LastIndexOf(source_item.Tag.ToString());
+                    if (!SecurityManager.rightLevelEnoughToAccesSystem(SecurityManager.getConnectedAgentRight(), needed_right))
+                    {
+                        if (SecurityManager.getFormatedSessionInfo() == "")
+                        {
+                            endPreviousSession();
+                        }
+                        MessageBox.Show("Vous n'avez pas les droits nécessaires pour accéder à cette option");
+                        return;
+                    }
                 }
             }
 
             switch (clicked_menu_item.Name)
             {
                 /*----------------------------------  Update  ---------------------------------- */
-                case "rafraichirLaBaseDeDonnées":
+                case "nettoyerBaseDeDonnées":
                     {
                         clearData();
-                        
-                        changeBanner("Mise à jour de la base de données à partir d'un fichier système"+Environment.NewLine +"Veuillez patienter...", Color.DarkOrange);
-
-                        string message;
-                        if (Tools.readStudentsStateFile() == Definition.NO_ERROR_INT_VALUE)
-                        {
-                            message = "Mise à jour effectuée";
-                        }
-                        else
-                        {
-                            message = "La mise à jour a été interrompu suite à une erreur\n"
-                                    + "Vérifier que le fichier n'a pas utilisé par un autre processus "
-                                    + "et que les paramètres enregistrés sont valides";
-                        }
-                        MessageBox.Show(message);
                     }
                         break;
 
@@ -522,9 +589,15 @@ public partial class MainForm : Form
                         Form.ShowDialog();
                     }
                     break;
-                case "fichierDétatsDesÉtudiants":
+                case "MAJBaseDeDonnées":
                     {
                         SettingsStudentsStateFile Form = new SettingsStudentsStateFile();
+                        Form.ShowDialog();
+                    }
+                    break;
+                case "régimesDeSortie":
+                    {
+                        ExitRegime Form = new ExitRegime();
                         Form.ShowDialog();
                     }
                     break;
@@ -604,10 +677,6 @@ public partial class MainForm : Form
                 MessageBox.Show("Impossible d'atteindre le dossier : " + Definition.PATH_TO_FOLDER_HELP);
             }
         }
-
-
-
-        
     }
 
 

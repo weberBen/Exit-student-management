@@ -32,7 +32,6 @@ from datetime import date, datetime, time, timedelta
 import pandas
 import requests
 
-
 import default_modules.Tools as Tools
 from default_modules.Error import _Error
 from default_modules.Database import Database
@@ -51,14 +50,30 @@ def isInIterableObject(elem_to_find, object_list):
     except :
         return False
 
+'''
+'username': 'sortie.college@enc.hauts-de-seine.fr',
+'password': 'wimLDA34!&'
+'''
 
 class oZe:
 
+    def __init__(self, userName, pwd, path_to_settings_file, 
+                 start_date_check_punishment, start_date_check_non_close_elements,
+                 days_before_checking_school_life_absence=3,
+                 days_before_checking_school_punishment=1):
+        self.credential = { 
+                'username': userName,
+                'password': pwd
+                }
+        self.readXmlFile = Tools.ReadXmlFile(path_to_settings_file)
+        self.START_SCHOOL = self.readXmlFile.getStartSchool()
+        self.BREAK_TIME = self.readXmlFile.getExitBreak()
+        self.START_DATE_CHECKING_PUNISHMENT = start_date_check_punishment
+        self.START_DATE_CHECKING_NON_CLOSE_ELEMENTS = start_date_check_non_close_elements
+        self.DAYS_BEFORE_CHECKING_SCHOOL_LIFE_ABSENCE = days_before_checking_school_life_absence
+        self.DAYS_BEFORE_CHECKING_SCHOOL_PUNISHMENT = days_before_checking_school_punishment
+    
     protocol = 'https://'
-    credential = {
-        'username': 'usrname',
-        'password': 'pwd'
-    }
     root = 'enc.hauts-de-seine.fr/'
     paths = {
         None: '',
@@ -69,17 +84,8 @@ class oZe:
     }
     timeout = 2400 #40min
     
-    DAYS_BEFORE_CHECKING_SCHOOL_LIFE_ABSENCE = 3
-    DAYS_BEFORE_CHECKING_SCHOOL_PUNISHMENT = 1
     
-    START_SCHOOL = Tools.ReadXmlFile.getStartSchool()
-    BREAK_TIME = Tools.ReadXmlFile.getExitBreak()
-    
-    START_DATE_CHECKING_PUNISHMENT = date(2018, 12, 5) #years/month/day
-    START_DATE_CHECKING_NON_CLOSE_ELEMENTS = date(2018, 12, 5)
-     
-    @staticmethod
-    def get(url, timeout = datetime.now().timestamp() + timeout):
+    def get(self, url, timeout = datetime.now().timestamp() + timeout):
         '''
             Halting the process
         '''
@@ -98,11 +104,11 @@ class oZe:
                 '''
                     Sending a request
                 '''
-                request = session.get(oZe.url())
+                request = session.get(self.url())
                 '''
                     Sending the credential
                 '''
-                request = session.post(oZe.url('login'), data = oZe.credential)
+                request = session.post(self.url('login'), data = self.credential)
                 '''
                     Retrieving data
                 '''
@@ -135,19 +141,19 @@ class oZe:
             url = 'api-' + url
         return oZe.protocol + url + oZe.paths[path]
    
-    @staticmethod
-    def users(timeout = datetime.now().timestamp() + timeout):
+    
+    def users(self, timeout = datetime.now().timestamp() + timeout):
         '''
             Building the url
         '''
-        url = oZe.url('users', True)
+        url = self.url('users', True)
         url = url + '?aUai=0921241Z'
         url = url + '&aCategory=Eleve'
         
         '''
             Retrieving the users
         '''
-        data = oZe.get(url, timeout)
+        data = self.get(url, timeout)
         '''
             Processing the users
         '''
@@ -166,8 +172,8 @@ class oZe:
         '''
         return data
     
-    @staticmethod
-    def timetable(user, timeout = datetime.now().timestamp() + timeout):
+    
+    def timetable(self, user, timeout = datetime.now().timestamp() + timeout):
         '''
             Computing the period
         '''
@@ -179,7 +185,7 @@ class oZe:
         '''
             Building the url
         '''
-        url = oZe.url('classes', True) 
+        url = self.url('classes', True) 
         url = url + '?ctx_etab=0921241Z&aEleve=' 
         url = url + user['id'] 
         url = url + begin.strftime('&aDateDebut=%Y-%m-%dT23:00:00.000Z') 
@@ -189,7 +195,7 @@ class oZe:
         '''
             Retrieving the timetable
         '''
-        data = oZe.get(url, timeout)
+        data = self.get(url, timeout)
         if data is None:
             return None
             
@@ -246,12 +252,11 @@ class oZe:
         '''
         return data
     
-    @staticmethod
-    def leisures(user, timeout = datetime.now().timestamp() + timeout):
+    def leisures(self, database, user, timeout = datetime.now().timestamp() + timeout):
         '''
             Retrieving the timetable
         '''
-        timetable = oZe.timetable(user, timeout)
+        timetable = self.timetable(user, timeout)
         '''
             Processing the timetable
         '''
@@ -259,7 +264,7 @@ class oZe:
             return None
             
         if timetable.empty:
-            return timetable
+            return None
         
         '''
             Computing the period between 8h and 24h
@@ -272,8 +277,8 @@ class oZe:
             at 00h00
         '''
         
-        start_school = Tools.Timer.timeToSecond(oZe.START_SCHOOL)
-        break_time = Tools.Timer.timeToSecond(oZe.BREAK_TIME)
+        start_school = Tools.Timer.timeToSecond(self.START_SCHOOL)
+        break_time = Tools.Timer.timeToSecond(self.BREAK_TIME)
         middle_break_time = break_time/2
         begin = datetime.combine(date.today(), time()).timestamp() + start_school
         end = begin + (86340-start_school) # begin + (23h59 - start_school)    
@@ -303,7 +308,7 @@ class oZe:
             if row['dateDebut'] - begin  >= break_time : 
                 temp_end = begin + middle_break_time
                 #create row
-                Database.addExitAuthorization(user['id_BD_local'], begin, temp_end, verification = True, reason="Pause meridienne")
+                database.addExitAuthorization(user['id_BD_local'], begin, temp_end, verification = True, reason="Pause meridienne")
             
             
             begin = row['dateFin']
@@ -313,18 +318,17 @@ class oZe:
             So we add into the database when the student can leave the school in a regular way
         '''
 
-        Database.addExitAuthorization(user['id_BD_local'], begin, end, verification = False, reason="Fin de l'emplois du temps")
+        database.addExitAuthorization(user['id_BD_local'], begin, end, verification = False, reason="Fin de l'emplois du temps")
         '''
             Return a list of leisures
         '''
         return 1
     
     
-    @staticmethod
-    def schoolLifeIncident(timeout = datetime.now().timestamp() + timeout):
+    def schoolLifeIncident(self, timeout = datetime.now().timestamp() + timeout):
         end_date = date.today()
         
-        url = oZe.url('schoolLife', True)
+        url = self.url('schoolLife', True)
         url = url + '?ctx_etab=0921241Z' 
         url = url + '&aDateDebut=2018-08-15T22:00:00.000Z' #start of the school years
         url = url + end_date.strftime('&aDateFin=%Y-%m-%dT23:00:00.000Z') 
@@ -336,18 +340,18 @@ class oZe:
         url = url + '&aTypeIncidentID=TYPE_INCIDENT_TOUT'
         url = url + '&aTypePunitionID=TYPE_PUNITION_TOUT'
         
-        #data = oZe.get(url, timeout)
+        #data = self.get(url, timeout)
         
         return url
     
-    def nonClosedPunishement(timeout = datetime.now().timestamp() + timeout):
-        start_date = oZe.START_DATE_CHECKING_PUNISHMENT
-        end_date = date.today() + timedelta(days=-oZe.DAYS_BEFORE_CHECKING_SCHOOL_PUNISHMENT)
+    def nonClosedPunishement(self, timeout = datetime.now().timestamp() + timeout):
+        start_date = self.START_DATE_CHECKING_PUNISHMENT
+        end_date = date.today() + timedelta(days=-self.DAYS_BEFORE_CHECKING_SCHOOL_PUNISHMENT)
         
         if start_date>end_date :
             return None
         
-        url = oZe.url('schoolLife', True)
+        url = self.url('schoolLife', True)
         url = url + '?ctx_etab=0921241Z' 
         url = url + start_date.strftime('&aDateDebut=%Y-%m-%dT23:00:00.000Z')
         url = url + end_date.strftime('&aDateFin=%Y-%m-%dT23:00:00.000Z') 
@@ -358,20 +362,20 @@ class oZe:
         url = url + '&aTypePunitionID=TYPE_PUNITION_TOUT'
                  
                                                              
-        data = oZe.get(url, timeout)
+        data = self.get(url, timeout)
         if data is not None:
             data = data[['id']]
         
         return data
     
-    def nonJustifyElement(timeout = datetime.now().timestamp() + timeout):
-        start_date = oZe.START_DATE_CHECKING_NON_CLOSE_ELEMENTS
-        end_date = date.today() + timedelta(days=-oZe.DAYS_BEFORE_CHECKING_SCHOOL_LIFE_ABSENCE)
+    def nonJustifyElement(self, timeout = datetime.now().timestamp() + timeout):
+        start_date = self.START_DATE_CHECKING_NON_CLOSE_ELEMENTS
+        end_date = date.today() + timedelta(days=-self.DAYS_BEFORE_CHECKING_SCHOOL_LIFE_ABSENCE)
         
         if start_date>end_date :
             return None
         
-        url = oZe.url('schoolLife', True)
+        url = self.url('schoolLife', True)
         url = url + '?ctx_etab=0921241Z' 
         url = url + start_date.strftime('&aDateDebut=%Y-%m-%dT23:00:00.000Z')
         url = url + end_date.strftime('&aDateFin=%Y-%m-%dT23:00:00.000Z') 
@@ -382,22 +386,27 @@ class oZe:
         url = url + '&aTypeIncidentID=TYPE_INCIDENT_TOUT'
         url = url + '&aTypePunitionID=TYPE_PUNITION_TOUT'
                                                                          
-        data = oZe.get(url, timeout)
+        data = self.get(url, timeout)
         if data is not None:
             data = data[['id']]
         
         return data
 
+
 # In[ ]:
-def update():
+def update(userName, pwd, path_to_settings_file, path_temp_database_folder,
+           start_date_check_punishment, start_date_check_non_close_elements):
     '''
         Computing the halting time
     '''
-    halt = datetime.now().timestamp() + oZe.timeout
-    users = matcheStudent(halt)
+    oze = oZe(userName, pwd, path_to_settings_file,start_date_check_punishment, start_date_check_non_close_elements)
+    database = Database(path_to_settings_file, path_temp_database_folder)
     
-    updateStudentBan(users, halt)
-    updateStudentExit(users, halt)
+    halt = datetime.now().timestamp() + oze.timeout
+    users = matcheStudent(oze, database, halt)
+    
+    updateStudentBan(oze, database, users, halt)
+    updateStudentExit(oze, database, users, halt)
     
     
     return None
@@ -405,11 +414,11 @@ def update():
 
 # In[]
 
-def matcheStudent(halt):
+def matcheStudent(oze, database, halt):
     '''
         Retrieving the users
     '''
-    local = Database.selectAllStudent(halt)
+    local = database.selectAllStudent(halt)
     local['nom']=local['nom'].apply(lambda x : Tools.normalizeString(x, 'ascii'))
     local['prenom']=local['prenom'].apply(lambda x : Tools.normalizeString(x, 'ascii'))
     
@@ -427,7 +436,7 @@ def matcheStudent(halt):
         database. Thus, we need to get all the student information (last name, first name and used id)
         Then matches the table id (from the local database) and the used id (from oze)
     """
-    extern = oZe.users(halt)#get all student ids
+    extern = oze.users(halt)#get all student ids
     if extern is None:
         _Error.raiseError("Erreur : aucun élève accessible depuis Oze")
 
@@ -450,7 +459,7 @@ def matcheStudent(halt):
    
     return users
 
-# In[]
+
 def searchStudent(users, oze_id):
     
     if users is None:
@@ -462,8 +471,8 @@ def searchStudent(users, oze_id):
             return user
         
     return None
-# In[]
-def updateStudentExit(users, halt):
+
+def updateStudentExit(oze, database, users, halt):
     print("\t*Mise à jour des autorisations de sorties le : " + str(datetime.now()))
     '''
         Computing the halting time per request
@@ -492,7 +501,7 @@ def updateStudentExit(users, halt):
         '''
             Retrieving the leisures
         '''  
-        leisures = oZe.leisures(user, datetime.now().timestamp() + chunk)
+        leisures = oze.leisures(database, user, datetime.now().timestamp() + chunk)
         
         if leisures is None:
             '''
@@ -502,15 +511,15 @@ def updateStudentExit(users, halt):
     
     
     print("\t\t* Mise à jour de la base de données : " + str(datetime.now()))
-    Database.updateExitAuthorizations(halt)
+    database.updateExitAuthorizations(halt)
     
     return None
     
-# In[]
-def updateStudentBan(users, halt):
+
+def updateStudentBan(oze, database, users, halt):
     print("\t*Mise à jour des interdiction de sorties le : " + str(datetime.now()))
     
-    start = datetime.combine(date.today(), oZe.START_SCHOOL).timestamp()
+    start = datetime.combine(date.today(), oze.START_SCHOOL).timestamp()
     end = datetime.combine(date.today(), time(23,59,59)).timestamp()
     '''
     
@@ -518,32 +527,32 @@ def updateStudentBan(users, halt):
     
     '''
     print("\t\t*Récupération des punitions non cloturées le : " + str(datetime.now()))
-    data = oZe.nonClosedPunishement(halt)
+    data = oze.nonClosedPunishement(halt)
     
     if data is not None :
         for oze_id in data['id']:
             student = searchStudent(users,oze_id)
             if student is not None:
-                Database.addExitBan(student['id_BD_local'], start, end, reason="Punition(s) non cloturee(s)")
+                database.addExitBan(student['id_BD_local'], start, end, reason="Punition(s) non cloturee(s)")
     '''
     
     update non justify element
     
     '''
     print("\t\t*Récupération des absences/retards non cloturé(e)s le : " + str(datetime.now()))
-    data = oZe.nonJustifyElement(halt)
+    data = oze.nonJustifyElement(halt)
     if data is not None :
         for oze_id in data['id']:
             student = searchStudent(users,oze_id)
             if student is not None:
-                Database.addExitBan(student['id_BD_local'], start, end, reason="Absence(s)\Retard(s) non cloture(e)(s)")
+                database.addExitBan(student['id_BD_local'], start, end, reason="Absence(s)\Retard(s) non cloture(e)(s)")
     
     ''' 
     update database
     '''
     
     print("\t\t* Mise à jour de la base de données : " + str(datetime.now()))
-    Database.updateExitBans(halt)
+    database.updateExitBans(halt)
     
     return None
 

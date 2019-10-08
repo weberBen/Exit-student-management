@@ -63,8 +63,6 @@ def getComputerTableId(timeout, credential, table, id_computer):
 
 class Database:
 
-    credential = Tools.ReadXmlFile.getDatabaseCredential()
-    
     table = {
                 'student': 'TABLE_ELEVES',
                 'leisure': 'TABLE_SORTIE_TEMPORAIRE',
@@ -72,56 +70,55 @@ class Database:
                 'ban' : 'TABLE_BLOCAGE_TEMPORAIRE'
             }
     
-    DIRECTORY_FILES = "temp_data"
-    FILE_NAME_EXIT = "exit_authorizations.csv"
-    FILE_NAME_BAN = "exit_bans.csv"
+    FILE_NAME_EXIT = 'exit_authorizations.csv'
+    FILE_NAME_BAN = 'exit_bans.csv'
     
-    COMPUTER_AUTHENTIFICATION_ID = "Computer"
+    COMPUTER_AUTHENTIFICATION_ID = 'Computer'
     TYPE_STUDENT_TABLE = 0
     TYPE_DIVISION_TABLE = 2
     timeout = 600 #10min
-    COMPUTER_TABLE_ID = getComputerTableId(datetime.now().timestamp() + timeout, credential, table['agent'], COMPUTER_AUTHENTIFICATION_ID)
     
-    
-    c_exit = {"id" : "Id eleve", "start" : "Heure debut", "end" : "Heure fin", "verif": "verification", "reason": "Motif"}
-    exit_array = pandas.DataFrame(columns = ['None', c_exit['id'], c_exit['start'], c_exit['end'], c_exit['verif'], c_exit['reason']])
-    """ When we update student informations, we don't save the modification into the database for each student
+    def __init__(self, path_to_settings_file, path_temp_database_folder):
+        self.ReadXmlFile = Tools.ReadXmlFile(path_to_settings_file)
+        self.path_temp_database_folder = path_temp_database_folder
+        self.credential = self.ReadXmlFile.getDatabaseCredential()
+        self.COMPUTER_TABLE_ID = getComputerTableId(datetime.now().timestamp() + Database.timeout, self.credential, Database.table['agent'], Database.COMPUTER_AUTHENTIFICATION_ID)
+        self.c_exit = {"id" : "Id eleve", "start" : "Heure debut", "end" : "Heure fin", "verif": "verification", "reason": "Motif"}
+        self.exit_array = pandas.DataFrame(columns = ['None', self.c_exit['id'], self.c_exit['start'], self.c_exit['end'], self.c_exit['verif'], self.c_exit['reason']])
+        """ When we update student informations, we don't save the modification into the database for each student
         we wait until we process all the student from the database, then save it into a csv file
         And then we load all the informations from that file into the database (after deleting all the data
         into the corresponding table)
         To make the script easier the columnz into the file are ordered as thez are into the database
         (when a column into the database can't not be update or not need to be update we just create a None column
         that is empty)
-    """
+        """
     
-    c_ban = {"type" : "Type table", "id": "Id table", "start": "Heure debut", "end":"Heure fin", "reason":"Motif","agent" : "Id agent"}
-    ban_array = pandas.DataFrame(columns = ['None', c_ban['type'], c_ban['id'], c_ban['start'], c_ban['end'], c_ban['reason'], c_ban['agent']])
+        self.c_ban = {"type" : "Type table", "id": "Id table", "start": "Heure debut", "end":"Heure fin", "reason":"Motif","agent" : "Id agent"}
+        self.ban_array = pandas.DataFrame(columns = ['None', self.c_ban['type'], self.c_ban['id'], self.c_ban['start'], self.c_ban['end'], self.c_ban['reason'], self.c_ban['agent']])
     
     
     
-    @staticmethod
-    def addExitAuthorization(student_table_id, timepan_start_time, timepan_end_time, verification, reason=""):
+    def addExitAuthorization(self, student_table_id, timepan_start_time, timepan_end_time, verification, reason=""):
         """ add an information about the student into the corresponding array 
             Be aware that the "student_table_id" is the primary key of the table
         """
-        c_exit = Database.c_exit
         start_time = Tools.Timer.timespanToString(timepan_start_time)
         end_time = Tools.Timer.timespanToString(timepan_end_time)
         
-        data = {c_exit['id']: student_table_id, c_exit['start']: start_time, c_exit['end'] : end_time, c_exit['verif']: getVerificationValue(verification), c_exit['reason'] : reason}
-        Database.exit_array = Database.exit_array.append(data, ignore_index = True)
+        data = {self.c_exit['id']: student_table_id, self.c_exit['start']: start_time, self.c_exit['end'] : end_time, self.c_exit['verif']: getVerificationValue(verification), self.c_exit['reason'] : reason}
+        self.exit_array = self.exit_array.append(data, ignore_index = True)
     
-    @staticmethod
-    def updateExitAuthorizations(timeout):
+    
+    def updateExitAuthorizations(self, timeout):
         '''save the corresponding array as csv file, delete the corresponding table, insert all the new data'''
         filename = Database.FILE_NAME_EXIT
         
         #we save all the csv file into the subdirectory "DIRECTORY_FILES"
-        filepath = os.path.join(os.getcwd(), Database.DIRECTORY_FILES)
-        filepath = os.path.join(filepath, filename)
+        filepath = os.path.join(self.path_temp_database_folder, filename)
         
         try:
-            Database.exit_array.to_csv(filepath, sep = ';', encoding =  'utf-8-sig', index = False)
+            self.exit_array.to_csv(filepath, sep = ';', encoding =  'utf-8-sig', index = False)
             
         except PermissionError as e: 
             msg = "Erreur : impossible de sauvegarder les données traitées"
@@ -130,32 +127,31 @@ class Database:
             msg +="\n"+ str(e)
             _Error.raiseError(msg)
             
-        Database.truncateTable(Database.table["leisure"], timeout)
-        Database.bulkInsert(Database.table["leisure"], filepath, timeout)
-        Database.exit_array = Database.exit_array[0:0] #remove all row from dataframe
+        self.truncateTable(self.table["leisure"], timeout)
+        self.bulkInsert(self.table["leisure"], filepath, timeout)
+        self.exit_array = self.exit_array[0:0] #remove all row from dataframe
     
-    @staticmethod
-    def addExitBan(student_table_id, timepan_start_time, timepan_end_time, reason):
+    
+    def addExitBan(self, student_table_id, timepan_start_time, timepan_end_time, reason):
         """ add an information about the student into the corresponding array 
             Be aware that the "student_table_id" is the primary key of the table
         """
-        c_ban = Database.c_ban
+        
         start_time = Tools.Timer.timespanToString(timepan_start_time)
         end_time = Tools.Timer.timespanToString(timepan_end_time)
         
-        data = {c_ban['type'] : Database.TYPE_STUDENT_TABLE, c_ban['id'] : student_table_id, c_ban['start'] :start_time, c_ban['end'] : end_time, c_ban['agent'] : Database.COMPUTER_TABLE_ID, c_ban['reason'] : reason }
-        Database.ban_array = Database.ban_array.append(data, ignore_index = True)
+        data = {self.c_ban['type'] : Database.TYPE_STUDENT_TABLE, self.c_ban['id'] : student_table_id, self.c_ban['start'] :start_time, self.c_ban['end'] : end_time, self.c_ban['agent'] : self.COMPUTER_TABLE_ID, self.c_ban['reason'] : reason }
+        self.ban_array = self.ban_array.append(data, ignore_index = True)
     
-    @staticmethod
-    def updateExitBans(timeout):
+    
+    def updateExitBans(self, timeout):
         '''save the corresponding array as csv file, delete the corresponding table, insert all the new data'''
         filename = Database.FILE_NAME_BAN
         #we save all the csv file into the subdirectory "DIRECTORY_FILES"
-        filepath = os.path.join(os.getcwd(), Database.DIRECTORY_FILES)
-        filepath = os.path.join(filepath, filename)
+        filepath = os.path.join(self.path_temp_database_folder, filename)
         
         try:
-            Database.ban_array.to_csv(filepath, sep = ';', encoding =  'utf-8-sig', index = False)
+            self.ban_array.to_csv(filepath, sep = ';', encoding =  'utf-8-sig', index = False)
             
         except PermissionError as e: 
             msg = "Erreur : impossible de sauvegarder les données traitées"
@@ -164,17 +160,17 @@ class Database:
             msg +="\n"+ str(e)
             _Error.raiseError(msg)
             
-        Database.truncateTable(Database.table["ban"], timeout)
-        Database.bulkInsert(Database.table["ban"], filepath, timeout)
-        Database.ban_array = Database.ban_array[0:0] #remove all row from dataframe
+        self.truncateTable(self.table["ban"], timeout)
+        self.bulkInsert(self.table["ban"], filepath, timeout)
+        self.ban_array = self.ban_array[0:0] #remove all row from dataframe
         
-    @staticmethod
-    def clearUpdatedTable(timeout = datetime.now().timestamp() + timeout):
-        Database.truncateTable(Database.table["leisure"], timeout)
-        Database.truncateTable(Database.table["ban"], timeout)
     
-    @staticmethod
-    def selectAllStudent(timeout):
+    def clearUpdatedTable(self, timeout = datetime.now().timestamp() + timeout):
+        self.truncateTable(self.table["leisure"], timeout)
+        self.truncateTable(self.table["ban"], timeout)
+    
+    
+    def selectAllStudent(self, timeout):
         ''' get all the student information saved into the database'''
         
         msg = None
@@ -185,7 +181,7 @@ class Database:
                 '''
                     Opening a connection
                 '''
-                connection = pyodbc.connect(**Database.credential)
+                connection = pyodbc.connect(**self.credential)
                 '''
                     Building the query
                 '''
@@ -210,8 +206,8 @@ class Database:
             _Error.raiseError(msg)
         
         return None
-    @staticmethod
-    def bulkInsert(table, filepath, timeout):
+    
+    def bulkInsert(self, table, filepath, timeout):
         '''
             Halting the process
         '''
@@ -225,7 +221,7 @@ class Database:
                 '''
                     Opening a connection
                 '''
-                connection = pyodbc.connect(**Database.credential)
+                connection = pyodbc.connect(**self.credential)
                 '''
                     Building the query
                 '''
@@ -252,8 +248,8 @@ class Database:
         
         return None
     
-    @staticmethod
-    def truncateTable(table, timeout):
+    
+    def truncateTable(self, table, timeout):
         '''
             Halting the process
         '''
@@ -266,7 +262,7 @@ class Database:
                 '''
                     Opening a connection
                 '''
-                connection = pyodbc.connect(**Database.credential)
+                connection = pyodbc.connect(**self.credential)
                 '''
                     Building the query
                 '''

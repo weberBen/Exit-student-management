@@ -10,7 +10,8 @@ using Newtonsoft.Json;
 using StudentData = ToolsClass.Tools.StudentData;
 using Agent = ToolsClass.Tools.Agent;
 using TimeSlot = ToolsClass.Tools.TimeSlot;
-
+using StudentExitRegimeAuthorization = ToolsClass.Tools.StudentExitRegimeAuthorization;
+using StudentExitRegime = ToolsClass.Tools.StudentExitRegime;
 
 using System;
 using System.Drawing;
@@ -19,74 +20,76 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 using WindowsFormsApplication1.Forms;
+using System.Text;
+using Microsoft.VisualBasic.FileIO;
 /* The app itself check the online database (the website) frequently to gather informations about student as their free hour, their not fenced punishment
- * and unjustified absence.
- * Then all that informations are distributed in different tables into our local database.
- * In fact we need to have our own database because we have to associate each student to a unique RFID id. And we cannot add all that student
- * in a system file because we need to make opertion on that informations.
- * Morover each modification modification on a student is then register in a specific table with the id of the person in charge of that information
- * (which is also store into the database)
- * 
- * The database gather 7 tables :
- *  - "TABLE_AUTORISATION_SORTIE" which store all exit authorization
- *  An authorization is composed of 
- *      * a date from where the authorization start "DateDebut"
- *      * a date when the authorization end "DateFin"
- *      * a time slot (when the authorization start in time and when it stop) "HeureDebut", "HeureFin"
- *      * potentialy a reason for that authorization "Motif"
- *      * the id of the person in charge of that authorization (the person who set the authorization) "Id_agent"
- *  The table also contains :
- *      * the type of authorization : authorization can be delivered for one student or for the whole division of the student
- *        Then to know if the authoriztion is for a student or for a division we set a different value for each case "Type"
- *      * the index of the student or the division (in their own table) concerned by that authorization "Id_table"
- *  - "TABLE_BLOCAGE" which store when student can not leave the school. That table have the same columns as the table "TABLE_AUTORISATION_SORTIE"
- *  - "TABLE_AGENTS" which store all information about the potentiel person in charge of the modifications
- *      * Since the index of each row is unique, we use it as the id of the agent "Id_agent"
- *      * the last name of the agent "Nom"
- *      * the first name of the agent "Prenom"
- *      * the job of the agent "Travail"
- *      * the mail adress of the agent "AdresseMail". That column is require because we send the agent password through mail
- *      * an id to acces the app "Identifiant". The id is unique in the whole database
- *      * a password, which has been hashed, to acess the app "MotDePAssehache"
- *      * the salt of the hashed password "HashSalt"
- *      * a short secure id (like when user want to acces a windows session with a four digit number) "IdentifiantCourtSecurise"
- *        The short secure id is unique in the whole database
- *  - "TABLE_CLASSES" which store all the division in the school
- *      * we use the index of each row as the id of the current division in the whole database "Id_classe"
- *      * a colum that represent the name of the divisions (like "3A", "6b",...) "Classe"
- *  - "TABLE_REGISTRE" which store all the modification made into the database      
- *      * the type concerned by the modification (student or division) "Type"
- *      * the index of the concerned student or division "Id_table"
- *      * the modification as plain text "Modification"
- *  - "TABLE_ELEVES" which store all the informations about the student itself
- *      * the index of the table is used as the id of the student in the whole database "Id_eleve"
- *      * the student last name "Nom"
- *      * the student first name "Prenom"
- *      * the id of the student division "Id_classe"
- *      * the student sex as an integer value "Sexe"
- *      * the half bord days as plain text "DemiPension"
- *      * the rfid id (that has been given to the student) "Id_RFID"
- *  - "TABLE_RESULTATS" which store the result of all the process to know when the student can leave the school. This table avoid
- *  to retrive all informations about a student when he asks for exit the school (whiwh is faster)
- *  - "TABLE_SORTIE_TEMPORAIRE" which store all informations about the student schedule that has been found online
- *  That table saved when the student can leaves the school on the whole current day (and those informations are only accecible from online)
- *  Thus, the app frequently update that table
- *      * the index of the table (primary key) "Id"
- *      * the id of the student "Id_eleve"
- *      * the start of the time slot when student can leave the school "HeureDebut"
- *      * the end of the time slot when student can leave the school "HeureFin"
- *      * an indication if agent have to check other student informations before letting him leave "VerificationRequise"
- *      
- *      
- * Notice :
- *  * Most of the table have a column to set the date and time when the current row was update (or create)
- *  * Most of the tables have a column for an integer value which represent the fact that the row will not be take in consideration for search
- *  That column represent the fact that the row is now deleted from the database. In fact when user want to delete a row we updat that value
- *  but the data remain in the database for a certain time (but data are no more available for user)
- *  * All the date and time are store in the database as plain text to avoid automatic conversion. Like that we can keep
- *  control on the format of the conversion
- *  * Most of the tables have a column that represent the type of data (if the data concern a student or a division). The type "Type" is an integer value
- *  * Most of the tables have a column that indicate the table index of the data (the table index of the student or of the division) "Id_table"
+* and unjustified absence.
+* Then all that informations are distributed in different tables into our local database.
+* In fact we need to have our own database because we have to associate each student to a unique RFID id. And we cannot add all that student
+* in a system file because we need to make opertion on that informations.
+* Morover each modification modification on a student is then register in a specific table with the id of the person in charge of that information
+* (which is also store into the database)
+* 
+* The database gather 7 tables :
+*  - "TABLE_AUTORISATION_SORTIE" which store all exit authorization
+*  An authorization is composed of 
+*      * a date from where the authorization start "DateDebut"
+*      * a date when the authorization end "DateFin"
+*      * a time slot (when the authorization start in time and when it stop) "HeureDebut", "HeureFin"
+*      * potentialy a reason for that authorization "Motif"
+*      * the id of the person in charge of that authorization (the person who set the authorization) "Id_agent"
+*  The table also contains :
+*      * the type of authorization : authorization can be delivered for one student or for the whole division of the student
+*        Then to know if the authoriztion is for a student or for a division we set a different value for each case "Type"
+*      * the index of the student or the division (in their own table) concerned by that authorization "Id_table"
+*  - "TABLE_BLOCAGE" which store when student can not leave the school. That table have the same columns as the table "TABLE_AUTORISATION_SORTIE"
+*  - "TABLE_AGENTS" which store all information about the potentiel person in charge of the modifications
+*      * Since the index of each row is unique, we use it as the id of the agent "Id_agent"
+*      * the last name of the agent "Nom"
+*      * the first name of the agent "Prenom"
+*      * the job of the agent "Travail"
+*      * the mail adress of the agent "AdresseMail". That column is require because we send the agent password through mail
+*      * an id to acces the app "Identifiant". The id is unique in the whole database
+*      * a password, which has been hashed, to acess the app "MotDePAssehache"
+*      * the salt of the hashed password "HashSalt"
+*      * a short secure id (like when user want to acces a windows session with a four digit number) "IdentifiantCourtSecurise"
+*        The short secure id is unique in the whole database
+*  - "TABLE_CLASSES" which store all the division in the school
+*      * we use the index of each row as the id of the current division in the whole database "Id_classe"
+*      * a colum that represent the name of the divisions (like "3A", "6b",...) "Classe"
+*  - "TABLE_REGISTRE" which store all the modification made into the database      
+*      * the type concerned by the modification (student or division) "Type"
+*      * the index of the concerned student or division "Id_table"
+*      * the modification as plain text "Modification"
+*  - "TABLE_ELEVES" which store all the informations about the student itself
+*      * the index of the table is used as the id of the student in the whole database "Id_eleve"
+*      * the student last name "Nom"
+*      * the student first name "Prenom"
+*      * the id of the student division "Id_classe"
+*      * the student sex as an integer value "Sexe"
+*      * the half bord days as plain text "DemiPension"
+*      * the rfid id (that has been given to the student) "Id_RFID"
+*  - "TABLE_RESULTATS" which store the result of all the process to know when the student can leave the school. This table avoid
+*  to retrive all informations about a student when he asks for exit the school (whiwh is faster)
+*  - "TABLE_SORTIE_TEMPORAIRE" which store all informations about the student schedule that has been found online
+*  That table saved when the student can leaves the school on the whole current day (and those informations are only accecible from online)
+*  Thus, the app frequently update that table
+*      * the index of the table (primary key) "Id"
+*      * the id of the student "Id_eleve"
+*      * the start of the time slot when student can leave the school "HeureDebut"
+*      * the end of the time slot when student can leave the school "HeureFin"
+*      * an indication if agent have to check other student informations before letting him leave "VerificationRequise"
+*      
+*      
+* Notice :
+*  * Most of the table have a column to set the date and time when the current row was update (or create)
+*  * Most of the tables have a column for an integer value which represent the fact that the row will not be take in consideration for search
+*  That column represent the fact that the row is now deleted from the database. In fact when user want to delete a row we updat that value
+*  but the data remain in the database for a certain time (but data are no more available for user)
+*  * All the date and time are store in the database as plain text to avoid automatic conversion. Like that we can keep
+*  control on the format of the conversion
+*  * Most of the tables have a column that represent the type of data (if the data concern a student or a division). The type "Type" is an integer value
+*  * Most of the tables have a column that indicate the table index of the data (the table index of the student or of the division) "Id_table"
 */
 
 
@@ -196,6 +199,9 @@ class DataBase
 
                     continue;
                 }
+                Error.details = "Requête non valide : " + request + "\n\n" + e_sql;
+                Error.error = "CERTDB";
+
                 break;
             }
             catch (Exception e)
@@ -274,6 +280,10 @@ class DataBase
 
                     continue;
                 }
+                Error.details = "La requête suivante n'a pas pu être effectuée : " + request + "\n\n\n" + e_sql;
+                Error.error = "CERTDB";
+
+                break;
             }
             catch (Exception e)
             {
@@ -345,6 +355,343 @@ class DataBase
             return Definition.ERROR_INT_VALUE;
         }
 
+    }
+
+    public int removeExitRegime(int table_id_regime)
+    {
+        string request;
+        int errCode;
+
+        //because Id_regime in TABLE_REGIMES_SORTIE is a foreign key for the TABLE_ELEVES and TABLE_RELATION_REGIME_PERMISSION, then we must update that table before deleting the row in the TABLE_REGIMES_SORTIE
+        request = "DELETE FROM TABLE_RELATIONS_REGIME_PERMISSION WHERE Id_regime=@table_id ";
+        errCode = executeNonQueryRequest(request,
+            new List<string>(new string[] { "@table_id" }),
+            new List<object>(new object[] { table_id_regime }));
+
+        if (errCode != Definition.NO_ERROR_INT_VALUE)
+            return Definition.ERROR_INT_VALUE;
+
+        request = "UPDATE TABLE_ELEVES SET Id_regime=null WHERE Id_regime=@table_id ";
+        errCode = executeNonQueryRequest(request,
+            new List<string>(new string[] { "@table_id" }),
+            new List<object>(new object[] { table_id_regime }));
+
+        if (errCode != Definition.NO_ERROR_INT_VALUE)
+            return Definition.ERROR_INT_VALUE;
+
+        request = "DELETE FROM TABLE_REGIMES_SORTIE WHERE Id_regime=@table_id ";
+        return executeNonQueryRequest(request,
+            new List<string>(new string[] { "@table_id"}),
+            new List<object>(new object[] { table_id_regime}));
+    }
+
+    public int removeAuthorizationExitRegime(int table_id_authorization_regime)
+    {
+        string request;
+        int errCode;
+
+        //because Id_permission in TABLE_PERMISSIONS_REGIME is a foreign key for the TABLE_RELATIONS_REGIME_PERMISSION, then we must update that table before deleting the row in the TABLE_PERMISSIONS_REGIME
+        request = "DELETE FROM TABLE_RELATIONS_REGIME_PERMISSION WHERE Id_permission=@table_id ";
+        errCode = executeNonQueryRequest(request,
+            new List<string>(new string[] { "@table_id" }),
+            new List<object>(new object[] { table_id_authorization_regime }));
+
+        if (errCode != Definition.NO_ERROR_INT_VALUE)
+            return Definition.ERROR_INT_VALUE;
+
+        request = "DELETE FROM TABLE_PERMISSIONS_REGIME WHERE Id_permission=@table_id ";
+        return executeNonQueryRequest(request,
+            new List<string>(new string[] { "@table_id" }),
+            new List<object>(new object[] { table_id_authorization_regime }));
+    }
+
+    public int addAuthorizationExitRegime(string name, TimeSpan timePeriod, TimeSpan start, TimeSpan end)
+    {
+        string request = "INSERT INTO TABLE_PERMISSIONS_REGIME (Label, Periode, Debut, Fin) VALUES (@label, @period, @start, @end) ";
+        return executeNonQueryRequest(request,
+            new List<string>(new string[] { "@label", "@period", "@start", "@end"}),
+            new List<object>(new object[] { name, Tools.timeToStringFromTimeSpan(timePeriod), Tools.timeToStringFromTimeSpan(start), Tools.timeToStringFromTimeSpan(end) }));
+    }
+
+    public int addAuthorizationExitRegime(List<StudentExitRegimeAuthorization> list)
+    {
+        foreach(StudentExitRegimeAuthorization authorization in list)
+        {
+            if (addAuthorizationExitRegime(authorization.name, authorization.period, authorization.start, authorization.end) != Definition.NO_ERROR_INT_VALUE)
+                return Definition.ERROR_INT_VALUE;
+        }
+
+        return Definition.NO_ERROR_INT_VALUE;
+    }
+
+
+    public int updateAuthorizationExitRegime(int table_id, string name, TimeSpan timePeriod, TimeSpan start, TimeSpan end)
+    {
+        string request = "UPDATE TABLE_PERMISSIONS_REGIME SET Label=@label, Periode=@period, Debut=@start, Fin=@end WHERE Id_permission=@table_id ";
+        return executeNonQueryRequest(request,
+            new List<string>(new string[] { "@table_id", "@label", "@period", "@start", "@end" }),
+            new List<object>(new object[] { table_id, name, Tools.timeToStringFromTimeSpan(timePeriod), Tools.timeToStringFromTimeSpan(start), Tools.timeToStringFromTimeSpan(end) }));
+    }
+
+    public int updateAuthorizationExitRegime(List<StudentExitRegimeAuthorization> list)
+    {
+        foreach (StudentExitRegimeAuthorization authorization in list)
+        {
+            if (authorization.Id == -1)
+            {
+                if (addAuthorizationExitRegime(authorization.name, authorization.period, authorization.start, authorization.end) != Definition.NO_ERROR_INT_VALUE)
+                    return Definition.ERROR_INT_VALUE;
+            }
+            else
+            {
+                if (updateAuthorizationExitRegime(authorization.Id, authorization.name, authorization.period, authorization.start, authorization.end) != Definition.NO_ERROR_INT_VALUE)
+                    return Definition.ERROR_INT_VALUE;
+            }
+        }
+
+        return Definition.NO_ERROR_INT_VALUE;
+    }
+
+
+    public int updateExitRegime(StudentExitRegime regime)
+    {
+        string request;
+        int errCode;
+
+        SqlConnection connection_database = openDataBase();
+        SqlDataReader sql_reader;
+
+        try
+        {
+            //update exit regime
+            if (regime.Id == -1)//add new exit regime
+            {
+                request = "INSERT INTO TABLE_REGIMES_SORTIE (Label) VALUES (@label) ";
+                errCode = executeNonQueryRequest(request,
+                    new List<string>(new string[] { "@label" }),
+                    new List<object>(new object[] { regime.name }));
+
+                if (errCode != Definition.NO_ERROR_INT_VALUE)
+                    return Definition.ERROR_INT_VALUE;
+
+                //get id of the inserted row
+                request = "SELECT Id_regime FROM TABLE_REGIMES_SORTIE WHERE Label=@label ";
+                sql_reader = executeReaderRequest(connection_database, request,
+                           new List<string>(new string[] { "@label" }),
+                           new List<object>(new object[] { regime.name }));
+
+                if (sql_reader != null && sql_reader.HasRows)
+                {
+                    sql_reader.Read();//the is only one authorization with that name
+                    regime.Id = sql_reader.GetInt32(0);
+                }
+                else
+                {
+                    return Definition.ERROR_INT_VALUE;
+                }
+
+            }else//update existing exit regime
+            {
+                request = "UPDATE TABLE_REGIMES_SORTIE SET Label=@label WHERE Id_regime=@table_id ";
+                errCode = executeNonQueryRequest(request,
+                    new List<string>(new string[] { "@label", "@table_id" }),
+                    new List<object>(new object[] { regime.name, regime.Id }));
+
+                if (errCode != Definition.NO_ERROR_INT_VALUE)
+                    return Definition.ERROR_INT_VALUE;
+
+                //remove all link between the current regime and permissions (to set new one after)
+                request = "DELETE FROM Table_RELATIONS_REGIME_PERMISSION WHERE Id_regime=@table_id ";
+                errCode = executeNonQueryRequest(request,
+                    new List<string>(new string[] { "@table_id" }),
+                    new List<object>(new object[] { regime.Id }));
+
+                if (errCode != Definition.NO_ERROR_INT_VALUE)
+                    return Definition.ERROR_INT_VALUE;
+            }
+
+            //add relation between existing permissions and the current regime (permissions must have been inserted before)
+        
+            foreach (string authorization_name in regime.authorizations)
+            {
+                request = "SELECT Id_permission FROM TABLE_PERMISSIONS_REGIME WHERE Label=@label ";
+                sql_reader = executeReaderRequest(connection_database, request,
+                           new List<string>(new string[] { "@label" }),
+                           new List<object>(new object[] { authorization_name }));
+
+                if (sql_reader != null && sql_reader.HasRows)
+                {
+                    sql_reader.Read();//the is only one authorization with that name
+                    int Id_authorization = sql_reader.GetInt32(0);
+
+                    request = "INSERT INTO Table_RELATIONS_REGIME_PERMISSION (Id_regime, Id_permission) VALUES (@id_regime, @id_authorization) ";
+                    errCode = executeNonQueryRequest(request,
+                               new List<string>(new string[] { "@id_regime", "@id_authorization" }),
+                               new List<object>(new object[] { regime.Id, Id_authorization }));
+
+                    if (errCode != Definition.NO_ERROR_INT_VALUE)
+                        return Definition.ERROR_INT_VALUE;
+                }
+                else//the permission does not exists
+                {
+                    return Definition.ERROR_INT_VALUE;
+                }
+            }
+
+        }
+        catch
+        {
+            return Definition.ERROR_INT_VALUE;
+        }
+        finally
+        {
+            closeDataBase(connection_database);
+        }
+
+
+
+        return Definition.NO_ERROR_INT_VALUE;
+    }
+
+    public int updateExitRegime(List<StudentExitRegime> list)
+    {
+        foreach (StudentExitRegime regime in list)
+        {
+            if (updateExitRegime(regime) != Definition.NO_ERROR_INT_VALUE)
+                return Definition.ERROR_INT_VALUE;
+        }
+
+        return Definition.NO_ERROR_INT_VALUE;
+    }
+
+
+    public string getExitRegimeLabel(int regime_table_id)
+    {
+        SqlConnection connection_database = openDataBase();
+
+        try
+        {
+            string request = "SELECT Label FROM TABLE_REGIMES_SORTIE WHERE Id_regime=@table_id ";
+            SqlDataReader sql_reader = executeReaderRequest(connection_database, request,
+                        new List<string>(new string[] { "@table_id" }),
+                        new List<object>(new object[] { regime_table_id }));
+
+            if (sql_reader != null && sql_reader.HasRows)
+            {
+                sql_reader.Read();//the is only one authorization with that name
+                return sql_reader.GetString(0);
+            }
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+        finally
+        {
+            closeDataBase(connection_database);
+        }
+
+        return null;
+    }
+
+    public string getExitRegimeLabel(SqlDataReader reader, int index)
+    {
+        if (reader == null)
+            return null;
+        if (index >= reader.FieldCount)
+            return null;
+        if (reader.IsDBNull(index))
+            return null;
+
+        return getExitRegimeLabel(reader.GetInt32(index));
+    }
+    
+
+    public Tuple<List<StudentExitRegimeAuthorization>, List<StudentExitRegime>> getAllExitRegime()
+    {
+        StudentExitRegimeAuthorization authorization;
+        StudentExitRegime regime;
+        List<StudentExitRegimeAuthorization> list_authorizations = new List<StudentExitRegimeAuthorization>();
+        List<StudentExitRegime> list_regime = new List<StudentExitRegime>();
+        string request;
+        SqlDataReader sql_reader;
+
+        SqlConnection connection_database = openDataBase();
+
+        try
+        {
+            //get all authorizations
+            request = "SELECT Id_permission, Label, Periode, Debut, Fin FROM Table_PERMISSIONS_REGIME ";
+
+            sql_reader = executeReaderRequest(connection_database, request);
+
+            if (sql_reader != null)
+            {
+                while (sql_reader.Read())
+                {
+                    authorization = new StudentExitRegimeAuthorization();
+                    authorization.toDefault();
+
+                    //fill fields
+                    authorization.Id = sql_reader.GetInt32(0);
+                    authorization.name = sql_reader.GetString(1);
+                    authorization.period = Tools.stringToTimeSpan(sql_reader.GetString(2));
+                    authorization.start = Tools.stringToTimeSpan(sql_reader.GetString(3));
+                    authorization.end = Tools.stringToTimeSpan(sql_reader.GetString(4));
+
+                    list_authorizations.Add(authorization);
+                }
+            }
+
+            //get all the exit regime label and id
+            request = "SELECT Id_regime, Label FROM TABLE_REGIMES_SORTIE ";
+
+            sql_reader = executeReaderRequest(connection_database, request);
+
+            if (sql_reader != null)
+            {
+                while (sql_reader.Read())
+                {
+                    //add new exit regime
+                    regime = new StudentExitRegime();
+                    regime.toDefault();
+
+                    regime.Id = sql_reader.GetInt32(0);
+                    regime.name = sql_reader.GetString(1);
+
+                    //get all the authorization associate to the current regime
+                    request = "SELECT P.Label " +
+                     "FROM Table_PERMISSIONS_REGIME P, Table_RELATIONS_REGIME_PERMISSION Re " +
+                     "WHERE Re.Id_permission = P.Id_permission AND Re.Id_regime = @table_id ";
+
+                    SqlDataReader sql_reader_temp = executeReaderRequest(connection_database, request,
+                        new List<string>(new string[] { "@table_id" }),
+                        new List<object>(new object[] { regime.Id }));
+
+                    if (sql_reader_temp != null)
+                    {
+                        while (sql_reader_temp.Read())
+                        {
+                            regime.authorizations.Add(sql_reader_temp.GetString(0));
+                        }
+
+                    }
+
+                    list_regime.Add(regime);
+                }
+
+            }
+
+        }catch
+        {
+            return null;
+        }
+        finally
+        {
+            closeDataBase(connection_database);
+        }
+
+        return Tuple.Create(list_authorizations, list_regime);
     }
 
     public int clearDatabase()
@@ -578,9 +925,124 @@ class DataBase
 
         return false;
     }
- 
 
-    public int updateStudentTable(List<StudentData> list)
+
+    /*---------------------------------------------  UPDATE STUDENT TABLE FROM FILE -------------------------------------------------------------------------------------*/
+
+    public int updateStudentTableFromFile(string path_update_file, string path_file_error)
+    {
+        StringBuilder error_file;
+        try
+        {
+            //error file
+            File.WriteAllText(path_file_error, "");//overwrite file
+            error_file = new StringBuilder();
+        }catch
+        {
+            return Definition.ERROR_INT_VALUE;
+        }
+
+        try
+        {
+            Tools.ParmsStudentsStateFile parms = Settings.StudentsStateFileParameters;
+            DataBase database = new DataBase();
+            bool exitRegimeActivated = Settings.ExitRegimeActivationState;
+
+            //set headers
+            var newLine = string.Format("{0};{1};{2};{3};{4}", "Nom", "Prenom", "Ligne origine", "Erreur", "Pris en compte");
+            error_file.AppendLine(newLine);
+
+            bool error = false;
+
+
+            using (TextFieldParser csvParser = new TextFieldParser(path_update_file))
+            {
+                csvParser.SetDelimiters(new string[] { Char.ToString(parms.separatorCsv) });
+                csvParser.HasFieldsEnclosedInQuotes = parms.encapsulationByQuote;
+
+                // Skip the row with the column names
+                csvParser.ReadLine();
+
+                //start updating database
+                List<Tuple<StudentData, long>> list = new List<Tuple<StudentData, long>>();
+                StudentData student = new StudentData();
+                int count;
+                int res;
+
+                count = 1;
+                student.toDefault();
+                while (!csvParser.EndOfData)
+                {
+                    // Read current line fields, pointer moves to the next line.
+                    string[] fields = csvParser.ReadFields();
+
+                    if (count % 100 == 0)//we save student into the database block of n students by block of n students at once
+                    {
+                        res = updateStudentTable(list, error_file);
+                        if (res != Definition.NO_ERROR_INT_VALUE)
+                            error = true;
+
+                        //save error file
+                        File.AppendAllText(path_file_error, error_file.ToString());
+
+                        //clear variable
+                        list.Clear();
+                        count = 1;
+                        error_file = new StringBuilder();
+                    }
+
+                    //check format information
+                    if (!Tools.isNormalizedStudentInfo(fields[parms.lastNameIndex], name: true) || !Tools.isNormalizedStudentInfo(fields[parms.firstNameIndex], name: true)
+                        || !Tools.isNormalizedStudentInfo(fields[parms.divisionIndex], division: true))
+                    {
+                        error = true;
+                        writeIntoErrorFile(error_file, fields[parms.lastNameIndex], fields[parms.firstNameIndex], csvParser.LineNumber, "Le format de la ligne n'est pas correct", false);
+                        continue;
+                    }
+
+                    student.toDefault();
+                    student.lastName = fields[parms.lastNameIndex];
+                    student.firstName = fields[parms.firstNameIndex];
+                    student.division = fields[parms.divisionIndex];
+                    student.sex = Tools.SexIntFromString(fields[parms.sexIndex], parms.femaleShortname); //sex (int)
+                    student.halfBoardDays = Tools.getNumericHalfBoardDaysFromString(parms, fields[parms.halfBoardDaysIndex]); //half-board regime (string)
+                    if (exitRegimeActivated)
+                    {
+                        student.labelRegime = fields[parms.exitRegimeIndex];
+                    }
+                    else
+                    {
+                        student.labelRegime = null;
+                    }
+
+                    list.Add(Tuple.Create(student, csvParser.LineNumber));
+
+                    count++;
+                }
+            }
+            File.AppendAllText(path_file_error, error_file.ToString());
+
+            if (error)//we save student into the database block of 200 students by block of 200 students at once
+            {
+                return Definition.ERROR_INT_VALUE;
+            }
+
+        }catch(Exception e)
+        {
+            Error.details = "Erreur lors de la lecture du fichier source pour la mise à jour des informations étudiantes : \n"+e;
+            Error.error = "CUDFF";
+            
+            writeIntoErrorFile(error_file, null, null, -1, ""+e, false);
+            File.AppendAllText(path_file_error, error_file.ToString());
+
+            return Definition.ERROR_INT_VALUE;
+        }
+
+        return Definition.NO_ERROR_INT_VALUE;
+    }
+
+
+    private int updateStudentTable(List<Tuple<StudentData, long>> list, StringBuilder error_file)
     {
         /*In fact openning and closing the database mutiple times in a short period makes SQL server crashe
          * So to avoid that problem, we gather students as medium block (for exemple, we split the file that contains student informations
@@ -593,105 +1055,256 @@ class DataBase
         */
         SqlConnection connection_database;
         int res;
+        StudentData student;
+        long lineNumber;
+        int student_id;
+        int division_id;
+        int regime_id;
+        int errCode;
+        bool error = false;
 
         connection_database = openDataBase();
-        res = Definition.NO_ERROR_INT_VALUE;
 
-        foreach (StudentData student in list)
+        foreach (var item in list)
         {
-            res = updateSingleStudentInTable(connection_database, student.lastName, student.firstName, student.division, student.sex, student.halfBoardDays);
-            if(res != Definition.NO_ERROR_INT_VALUE)
+            student = item.Item1;
+            lineNumber = item.Item2;
+
+            //get division id of the student
+            var tmp = getStudentDivisionId(connection_database, student.division);
+            division_id = tmp.Item1;
+            if (tmp.Item2.Length!=0)
             {
-                break;
+                error = true;
+
+                writeIntoErrorFile(error_file, student.lastName, student.firstName, lineNumber, tmp.Item2, false);
+                continue;
+            }
+
+            //get exit regime id for the student
+            if (student.labelRegime == null)
+            {
+                regime_id = -1;
+
+            }else
+            { 
+                tmp = getStudentExitRegimeId(connection_database, student.labelRegime);
+                regime_id = tmp.Item1;
+                if (tmp.Item2.Length != 0)
+                {
+                    error = true;
+
+                    writeIntoErrorFile(error_file, student.lastName, student.firstName, lineNumber, tmp.Item2, true);
+                    regime_id = -1;
+                }
+            }
+
+            //get student id (if it already exists into the database
+            tmp = getStudentId(connection_database, student.lastName, student.firstName);
+            student_id = tmp.Item1;
+            if (tmp.Item2.Length != 0)
+            {
+                error = true;
+
+                writeIntoErrorFile(error_file, student.lastName, student.firstName, lineNumber, tmp.Item2, false);
+                continue;
+            }
+
+            //update the database
+            if(student_id==-1)//new student
+            {
+               errCode = addStudent(connection_database, student.lastName, student.firstName, division_id, regime_id, student.sex, student.halfBoardDays);
+
+            } else//update data for the student
+            {
+                errCode = updateStudent(connection_database, student_id, division_id, regime_id, student.sex, student.halfBoardDays);
+            }
+
+            if(errCode!=Definition.NO_ERROR_INT_VALUE)
+            {
+                error = true;
+
+                writeIntoErrorFile(error_file, student.lastName, student.firstName, lineNumber, "un problème sur la base de données est survenu", false);
+                continue;
             }
         }
 
         closeDataBase(connection_database);
 
-        return res;
+        return (error)?Definition.ERROR_INT_VALUE:Definition.NO_ERROR_INT_VALUE;
     }
 
-    public int updateSingleStudentInTable(SqlConnection connection_database, string last_name, string first_name, string division, int sex, int[] half_board_days)
+    private void writeIntoErrorFile(StringBuilder error_file, string lastName, string firstName, long lineNumber, string error, bool added)
     {
+        var newLine = string.Format("{0};{1};{2};{3};{4}", firstName, lastName, lineNumber, error, added);
+        error_file.AppendLine(newLine);
+    }
 
-        //SqlConnection connection_database = openDataBase();
-        string date = Tools.dateTimeToString(DateTime.Now);
+    private Tuple<int, string> getStudentDivisionId(SqlConnection connection_database, string division)
+    {
+        int divison_table_id;
+        SqlDataReader sql_reader;
+        string request;
 
-        string request = "SELECT E.Id_eleve FROM TABLE_ELEVES AS E "
-            + "JOIN TABLE_CLASSES AS C ON C.Classe=@division AND C.Id_classe = E.Id_classe AND dbo.NormalizeText(E.Nom)=dbo.NormalizeText(@last_name) "
-            + "AND dbo.NormalizeText(E.Prenom)=dbo.NormalizeText(@first_name) AND E.Sexe=@sex ";
-
-        SqlDataReader sql_reader = executeReaderRequest(connection_database, request,
-                    new List<string>(new string[] { "@last_name", "@first_name", "@division", "@sex"}),
-                    new List<object>(new object[] { last_name, first_name, division, sex }));
-
-        // last_name, first_name, division, sex, DO_NOT_DELETE_VALUE
         try
         {
-            
+            request = "SELECT Id_classe FROM TABLE_CLASSES WHERE Classe=@division ";
+
+            sql_reader = executeReaderRequest(connection_database, request,
+                        new List<string>(new string[] { "@division" }),
+                        new List<object>(new object[] { division }));
+
+            if ((sql_reader != null) && (sql_reader.HasRows))//division already exists
+            {
+                sql_reader.Read();
+                divison_table_id = sql_reader.GetInt32(0);
+            }
+            else//new division
+            {
+                request = "INSERT INTO TABLE_CLASSES (Classe) OUTPUT INSERTED.Id_classe VALUES (@division) ";
+
+                SqlCommand cmd = new SqlCommand();
+                cmd.Connection = connection_database;
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = request; //set request
+                cmd.Parameters.AddWithValue("@division", division);
+
+                divison_table_id = (int)cmd.ExecuteScalar();//get id inserted row
+            }
+
+        }catch(Exception e)
+        {
+            divison_table_id = -1;
+            return Tuple.Create(divison_table_id, ""+e);
+        }
+
+        return Tuple.Create(divison_table_id, "");
+    }
+
+    private Tuple<int, string> getStudentExitRegimeId(SqlConnection connection_database, string labelRegime)
+    {
+        if(labelRegime==null)
+        {
+            return Tuple.Create(-1, "");
+        }
+
+        int table_id;
+        SqlDataReader sql_reader;
+        string request;
+
+        try
+        {
+            request = "SELECT Id_regime FROM TABLE_REGIMES_SORTIE WHERE Label=@label ";
+
+            sql_reader = executeReaderRequest(connection_database, request,
+                        new List<string>(new string[] { "@label" }),
+                        new List<object>(new object[] { labelRegime }));
+
+            if ((sql_reader != null) && (sql_reader.HasRows))//division already exists
+            {
+                sql_reader.Read();
+                table_id = sql_reader.GetInt32(0);
+            }
+            else//new division
+            {
+                return Tuple.Create(-1, "Le régime de sortie <<"+labelRegime+">> n'existe pas dans la base de données");
+            }
+
+        }
+        catch (Exception e)
+        {
+            return Tuple.Create(-1, "" + e);
+        }
+
+        return Tuple.Create(table_id, "");
+    }
+
+
+    private Tuple<int, string> getStudentId(SqlConnection connection_database, string last_name, string first_name)
+    {
+        int table_id = -1;
+        SqlDataReader sql_reader;
+        string request;
+
+        try
+        {
+            request = "SELECT Id_eleve FROM TABLE_ELEVES WHERE dbo.NormalizeText(Nom)=dbo.NormalizeText(@last_name) "
+            + "AND dbo.NormalizeText(Prenom)=dbo.NormalizeText(@first_name)";
+
+            sql_reader = executeReaderRequest(connection_database, request,
+                        new List<string>(new string[] { "@last_name", "@first_name" }),
+                        new List<object>(new object[] { last_name, first_name }));
+
             if (sql_reader != null)
             {
-                if (sql_reader.HasRows)//student is already into the database 
+                if (sql_reader.HasRows)
                 {
                     sql_reader.Read();
-                    int student_table_id = sql_reader.GetInt32(0);
-
-                    //if the student was previously deleted then update the delete value
-                    request = "UPDATE TABLE_ELEVES SET DemiPension=@half_board_days, Supprimer=@do_not_delete_value, DateEdition=@modification_date WHERE Id_eleve=@student_table_id ";
-
-                    return executeNonQueryRequest(request,
-                        new List<string>(new string[] { "@student_table_id","@half_board_days", "@do_not_delete_value", "@modification_date" }),
-                        new List<object>(new object[] { student_table_id, Tools.arrayToText(half_board_days), DO_NOT_DELETE_VALUE, date }));
-
-                }else//student is not into the database
+                    return Tuple.Create(sql_reader.GetInt32(0), "");
+                }else
                 {
-                    //create new division if needed and get the id of the division for that student
-                    int division_table_id;
-
-                    request = "SELECT Id_classe FROM TABLE_CLASSES WHERE Classe=@division ";
-
-                    sql_reader = executeReaderRequest(connection_database, request,
-                                new List<string>(new string[] { "@division"}),
-                                new List<object>(new object[] { division }));
-
-                    if( (sql_reader!=null) && (sql_reader.HasRows))
-                    {
-                        sql_reader.Read();
-                        division_table_id = sql_reader.GetInt32(0);
-                    }else
-                    {
-                        request = "INSERT INTO TABLE_CLASSES (Classe) OUTPUT INSERTED.Id_classe VALUES (@division) ";
-
-                        SqlCommand cmd = new SqlCommand();
-                        cmd.Connection = connection_database;
-                        cmd.CommandType = CommandType.Text;
-                        cmd.CommandText = request; //set request
-                        cmd.Parameters.AddWithValue("@division", division);
-
-                        division_table_id = (int)cmd.ExecuteScalar();
-                    }
-
-                    //create new student
-                    request = "INSERT INTO TABLE_ELEVES (Nom,Prenom,Id_classe,Sexe, DemiPension, Id_RFID, DateEdition, Supprimer) "
-                            + "VALUES (@last_name,@first_name,@division_table_id,@sex,@half_board_days,@id_rfid, @modification_date, @do_not_delete_agent) ";
-
-                    return executeNonQueryRequest(request,
-                    new List<string>(new string[] { "@last_name", "@first_name", "@division_table_id", "@sex", "@half_board_days", "@id_rfid", "@modification_date", "@do_not_delete_agent" }),
-                    new List<object>(new object[] { last_name, first_name, division_table_id, sex, Tools.arrayToText(half_board_days), "", date, DO_NOT_DELETE_VALUE }));
+                    return Tuple.Create(-1, "");
                 }
             }
 
-            return Definition.ERROR_INT_VALUE;
-
         }catch (Exception e)
         {
-            Error.details = "La requête suivante n'a pas pu être effectuée" + request + "\n\n\n" + e;
-            Error.error = "CERTDB";
+            return Tuple.Create(-1, "" + e);
+        }
 
-            return Definition.ERROR_INT_VALUE;
+        return Tuple.Create(table_id, "");
+    }
+
+    private int updateStudent(SqlConnection connection_database, int student_table_id, int division_table_id, int regime_table_id, int sex, int[] half_board_days)
+    {
+        string date = Tools.dateTimeToString(DateTime.Now);
+
+        if (regime_table_id == -1)
+        {
+            string request = "UPDATE TABLE_ELEVES SET DemiPension=@half_board_days, Supprimer=@do_not_delete_value, Sexe=@sex, Id_regime=null, Id_classe=@id_division, DateEdition=@modification_date WHERE Id_eleve=@student_table_id ";
+
+
+            return executeNonQueryRequest(request,
+                new List<string>(new string[] { "@student_table_id", "@half_board_days", "@do_not_delete_value", "@modification_date", "@sex", "@id_division" }),
+                new List<object>(new object[] { student_table_id, Tools.arrayToText(half_board_days), DO_NOT_DELETE_VALUE, date, sex, division_table_id }));
+        }
+        else
+        {
+            string request = "UPDATE TABLE_ELEVES SET DemiPension=@half_board_days, Supprimer=@do_not_delete_value, Sexe=@sex, Id_regime=@id_regime, Id_classe=@id_division, DateEdition=@modification_date WHERE Id_eleve=@student_table_id ";
+
+
+            return executeNonQueryRequest(request,
+                new List<string>(new string[] { "@student_table_id", "@half_board_days", "@do_not_delete_value", "@modification_date", "@sex", "@id_division", "@id_regime" }),
+                new List<object>(new object[] { student_table_id, Tools.arrayToText(half_board_days), DO_NOT_DELETE_VALUE, date, sex, division_table_id, regime_table_id }));
         }
     }
 
+
+    private int addStudent(SqlConnection connection_database, string last_name, string first_name, int division_table_id, int regime_table_id, int sex, int[] half_board_days)
+    {
+        string date = Tools.dateTimeToString(DateTime.Now);
+
+        if (regime_table_id != -1)
+        {
+            string request = "INSERT INTO TABLE_ELEVES (Nom,Prenom,Id_classe, Sexe, DemiPension, Id_regime, Id_RFID, DateEdition, Supprimer) "
+                            + "VALUES (@last_name,@first_name,@division_table_id,@sex,@half_board_days,@id_regime, @id_rfid, @modification_date, @do_not_delete_agent) ";
+
+            return executeNonQueryRequest(request,
+            new List<string>(new string[] { "@last_name", "@first_name", "@division_table_id", "@sex", "@half_board_days", "@id_regime", "@id_rfid", "@modification_date", "@do_not_delete_agent" }),
+            new List<object>(new object[] { last_name, first_name, division_table_id, sex, Tools.arrayToText(half_board_days), regime_table_id, "", date, DO_NOT_DELETE_VALUE }));
+        }else
+        {
+            string request = "INSERT INTO TABLE_ELEVES (Nom,Prenom,Id_classe, Sexe, DemiPension, Id_regime, Id_RFID, DateEdition, Supprimer) "
+                            + "VALUES (@last_name,@first_name,@division_table_id,@sex,@half_board_days,null, @id_rfid, @modification_date, @do_not_delete_agent) ";
+
+            return executeNonQueryRequest(request,
+            new List<string>(new string[] { "@last_name", "@first_name", "@division_table_id", "@sex", "@half_board_days", "@id_rfid", "@modification_date", "@do_not_delete_agent" }),
+            new List<object>(new object[] { last_name, first_name, division_table_id, sex, Tools.arrayToText(half_board_days), "", date, DO_NOT_DELETE_VALUE }));
+        }
+    }
+
+
+    /*----------------------------------------------------------------------------------------------------------------------------------*/
 
     public Tuple<List<int>,List<string>> getStudentDataBySearch(string search_word)
     {
@@ -814,7 +1427,7 @@ class DataBase
         try
         {
 
-            string request = "SELECT E.Nom,E.Prenom,C.Classe,E.Sexe,E.DemiPension,E.Id_RFID FROM TABLE_ELEVES AS E "
+            string request = "SELECT E.Nom,E.Prenom,C.Classe,E.Sexe,E.DemiPension,E.Id_RFID, E.Id_regime FROM TABLE_ELEVES AS E "
                 + "JOIN TABLE_CLASSES AS C ON E.Id_classe= C.Id_classe AND E.Id_eleve=@table_student_id AND E.Supprimer=@do_not_delete_value";
             SqlDataReader sql_reader = executeReaderRequest(connection_database, request,
                 new List<string>(new string[] { "@table_student_id", "@do_not_delete_value" }),
@@ -834,6 +1447,8 @@ class DataBase
                     student.sex = sql_reader.GetInt32(3);
                     student.halfBoardDays = Tools.textToArray<int>(sql_reader.GetString(4));
                     student.idRFID = sql_reader.GetString(5);
+                    student.labelRegime = getExitRegimeLabel(sql_reader, 6);
+
                 }
                 student.error = false;
             }
@@ -1059,7 +1674,7 @@ class DataBase
                             if (!sql_reader.IsDBNull(0))
                             {
                                 int[] half_board_days = Tools.textToArray<int>(sql_reader.GetString(0));
-                                if (half_board_days[day_of_week] == 0)//student must not need at school for lunch
+                                if(!Tools.isHalBoardDay(half_board_days, day_of_week).Item2)//student eat at home today
                                 {
                                     return Tuple.Create(Definition.EXIT_AUTHORIZED_UNCONDITIONALLY_VALUE, "Pause déjeuner");//student eat at home today
                                 }
@@ -1115,11 +1730,12 @@ class DataBase
 
         try
         {
-            string request = "SELECT E.Id_eleve, E.Nom,E.Prenom,C.Classe,E.Sexe,E.DemiPension FROM TABLE_ELEVES AS E "
+            string request = "SELECT E.Id_eleve, E.Nom,E.Prenom,C.Classe,E.Sexe,E.DemiPension, E.Id_regime FROM TABLE_ELEVES AS E "
             + "JOIN TABLE_CLASSES AS C ON E.Id_classe=C.Id_classe AND E.Id_RFID=@rfid AND E.Supprimer=@do_not_delete_value";
             SqlDataReader sql_reader = executeReaderRequest(connection_database, request,
                 new List<string>(new string[] { "@rfid", "@do_not_delete_value" }),
                 new List<object>(new object[] { rfid, DO_NOT_DELETE_VALUE }));
+
 
             if (sql_reader != null)
             {
@@ -1132,12 +1748,14 @@ class DataBase
                     student.division = sql_reader.GetString(3);
                     student.sex = sql_reader.GetInt32(4);
                     student.halfBoardDays = Tools.textToArray<int>(sql_reader.GetString(5));
-                    student.idRFID = rfid;          
+                    student.labelRegime = getExitRegimeLabel(sql_reader, 6);
+                    student.idRFID = rfid;
                 }
                 student.error = false;
             }
 
-        }catch { }
+        }
+        catch { }
 
         closeDataBase(connection_database);
 

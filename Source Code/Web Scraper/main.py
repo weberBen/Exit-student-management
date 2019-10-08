@@ -29,18 +29,14 @@ from time import sleep
 from datetime import datetime, date, timedelta, time
 import os, sys 
 import winsound as ws
-import subprocess
 
-path = os.path.abspath(os.path.join('..', 'default_modules'))
+
+path = "C:\Program Files\Application controle des sorties\modules"
 if not(path in sys.path):
     sys.path.append(path)
     
-path = os.path.abspath(os.path.join('..', 'custom_modules'))
-if not(path in sys.path):
-    sys.path.append(path)  
-    
 
-from default_modules.Tools import Timer
+from default_modules.Tools import Timer, NamedPipe, ReadXmlFile
 from default_modules.Database import Database
 from custom_modules.Oze import update, oZe
 
@@ -56,25 +52,64 @@ from custom_modules.Oze import update, oZe
 #start porgramm to avoid sleep mode
 #subprocess.call(['C:\\Program Files\\Application controle des sorties\\DontSleep.exe'])
 
+#%% VARIABLES
 
-Database.clearUpdatedTable();
+### -------------------------- PATH ENVIRONMENT
+PATH_SETTINGS_FILE = "path_to_xml_file" # Example : C:/Program Files/...
+PATH_TEMP_DATABASE_FOLDER = "path_to_tmp_file_for_python"
+
+PATH_SETTINGS_FILE = os.path.normpath(PATH_SETTINGS_FILE)
+PATH_TEMP_DATABASE_FOLDER = os.path.normpath(PATH_TEMP_DATABASE_FOLDER)
+
+### -------------------------- DATE ENVIRONMENT
+now = datetime.now()
+start_year = None
+
+month = now.month
+if month>=9 : #setpember->december
+    start_year = now.year
+else :#◘jenuary->august
+    start_year = now.year - 1
+    
+START_DATE_CHEKING_PUNISHMENT = date(start_year, 9, 5) #years/month/day
+START_DATE_CHECKING_NON_CLOSED_ELEMENTS = date(start_year, 9, 5) #years/month/day
+
+### -------------------------- OZE ENVIRONMENT
+OZE_USERNAME = "usr_id"
+OZE_PWD = "usr_pwd"
+
+#%% Start communication with c# API (to notify the server from error)
+
+readXmlFile = ReadXmlFile(PATH_SETTINGS_FILE)
+pipe = NamedPipe(readXmlFile.getNamedPipe())
+pipe.write("online")#all other state will cause send an error signal to the server
+
+
+#%% Main script
+
+timer = Timer(PATH_SETTINGS_FILE)
+database = Database(PATH_SETTINGS_FILE, PATH_TEMP_DATABASE_FOLDER)
+database.clearUpdatedTable();
 while True:
     try :
         print("\n\n-----------------------------------------------")
         print("****** Début de MAJ le : " + str(datetime.now())+" ******")
         
-        update()
+        update(OZE_USERNAME, OZE_PWD, 
+               PATH_SETTINGS_FILE, PATH_TEMP_DATABASE_FOLDER,
+               START_DATE_CHEKING_PUNISHMENT,
+               START_DATE_CHECKING_NON_CLOSED_ELEMENTS)
         
         print("\n****** Fin de MAJ le : " + str(datetime.now())+ " ******")
         print("\n\n-----------------------------------------------")
         
-        rest = Timer.waitingTimeToSecond()
+        rest = timer.waitingTimeToSecond()
         next_datetime = datetime.today() + timedelta(seconds=rest)
         print("\nProchaine mise à jour le " + next_datetime.strftime("%d-%m-%Y %H:%M") )
         
         sleep(rest)
     except Exception as e:
-        Database.clearUpdatedTable();
+        database.clearUpdatedTable();
         
         print("\n\n\n")
         print(e)
@@ -84,7 +119,4 @@ while True:
 
 #error when exit the loop
 print("\n\n!!!!!!!!!!!! ECHEC DE LA MISE A JOUR !!!!!!!!!!!!")
-FILE_NAME = "error.wav"
-soundfile = os.path.join(os.getcwd(), FILE_NAME)
-while True:
-    ws.PlaySound(soundfile, ws.SND_FILENAME)
+pipe.write("error")#signal error (when the script is closed, the pipe will be closed. Then the server interprets that event as an error)

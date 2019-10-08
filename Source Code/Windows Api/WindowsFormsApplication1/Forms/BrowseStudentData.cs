@@ -16,15 +16,16 @@ namespace WindowsFormsApplication1.Forms
 
         private static System.Windows.Forms.Timer timer;
         private const int TIME_TIMER = 500; //ms
-        private List<string> list_results = new List<string>(); //list of all results from the search
-        private List<int> list_id = new List<int>();
+        private List<string> list_results; //list of all results from the search
+        private List<int> list_id;
         //list of all the corresponding id from the database in oder to retireve the correct student from the search later
         private ToolsClass.Tools.StudentData student;
         private PhotoHandler photoHandler;
-        private DataBase dataBase = new DataBase();
+        private DataBase dataBase;
         private Color defaulft_textBoxes_color;
         private Font defaulft_textBoxes_font;
         private TextBox[] tab_textBox;
+
 
         private struct PhotoHandler
         {
@@ -132,6 +133,10 @@ namespace WindowsFormsApplication1.Forms
         public BrowseStudentData() 
         {
             InitializeComponent();
+            dataBase = new DataBase();
+            list_results = new List<string>();
+            list_id = new List<int>();
+            student = new ToolsClass.Tools.StudentData();
 
             //set default values for structures
             student.toDefault();
@@ -380,6 +385,7 @@ namespace WindowsFormsApplication1.Forms
             division_textBox.Text = student.division;
             sex_textBox.Text = student.getSexToString();
             rfid_id_textBox.Text = student.idRFID;
+            exit_regime_textBox.Text = student.labelRegime;
 
             for (int i=0; i< student.halfBoardDays.Length;i++)
             {

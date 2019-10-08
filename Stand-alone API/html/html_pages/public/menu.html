@@ -13,6 +13,9 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script src="javascriptFile.ashx?javascriptFile=global_script.js"></script>
   <script src="javascriptFile.ashx?javascriptFile=account_verification_script.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  <script src="javascriptFile.ashx?javascriptFile=jquery.fittext.js"></script>
+  
   <style type="text/css" id="gwd-text-style">
     p {
       margin: 0px;
@@ -48,21 +51,40 @@
       color: rgb(33, 92, 89);
       font-family: Bevan, cursive;
     }
+	.secondary-border-color
+    {
+      border-color: rgb(33, 92, 89);
+    }
+	.main-border-color
+    {
+      border-color: rgb(255, 255, 255);
+    }
     .menu-gwd-span-1k1n {
       height: 10%;
       left: 7%;
       top: 90%;
     }
-    .menu-gwd-img-1lld {
-      position: absolute;
+	.menu-label-position-size
+	{
+	  position: absolute;
       background-image: none;
-      background-color: rgb(33, 92, 89);
       top: 0%;
       width: 16.99%;
       transform-origin: 72.5485px 332.759px 0px;
       height: 100%;
       left: 83%;
+	}
+	
+    .menu-gwd-img-1lld {
+      background-color: rgb(33, 92, 89);
     }
+	.menu-elem-hidden {
+      visibility : hidden;
+    }
+	.menu-elem-visible {
+      visibility : block;
+    }
+	
     .menu-gwd-img-77n8 {
       position: absolute;
       height: 20.69%;
@@ -143,24 +165,38 @@
       left: 83%;
       transform-origin: 75.008px 247.531px 0px;
     }
+	.main_content_element_size
+	{
+		height : 87%;
+		width : 83.01%;
+	}
+	.main_content_element_size_fullscreen
+	{
+		width : 100%;
+	}
     .menu-gwd-div-i075 {
       position: absolute;
       transform-style: preserve-3d;
       left: 0%;
       top: 0%;
       border: none;
-      height: 87%;
       transform: translate3d(0px, 87px, 0px) rotateZ(0.0610656deg);
-      width: 83.01%;
       transform-origin: 368.078px 290.266px 0px;
     }
+	.main_content_header_size
+	{
+		width: 83.01%;
+		height: 13%;
+	}
+	.main_content_header_size_fullscreen
+	{
+		width: 100%;
+	}
     .gwd-div-1b4f {
       position: absolute;
       transform-origin: 366.35px 43.3649px 0px;
       top: 0%;
       left: 0%;
-      width: 83.01%;
-      height: 13%;
     }
     .gwd-div-1our {
       font-size: 80%;
@@ -200,7 +236,6 @@
         function disconnectionArrayClick() {
           DataRequest.sendPostRequest(DataRequest.setDisconnectionFromSession(), setChange);
         }
-
 
         function loadMaiScript(source) {
 
@@ -253,11 +288,32 @@
           }
         }
 
-
+		
+		function closeRuban()
+		{
+			document.getElementById("content_element").classList.add('main_content_element_size_fullscreen');
+			document.getElementById("content_header").classList.add('main_content_header_size_fullscreen');
+			
+			document.getElementById("cover_label_ruban").classList.remove('menu-elem-hidden');
+			document.getElementById("cover_label_ruban").classList.add('menu-elem-visible');
+			
+		}
+		
+		function openRuban()
+		{
+		   document.getElementById("content_element").classList.remove('main_content_element_size_fullscreen');
+		   document.getElementById("content_header").classList.remove('main_content_header_size_fullscreen');
+		   
+		   document.getElementById("cover_label_ruban").classList.remove('menu-elem-visible');
+			document.getElementById("cover_label_ruban").classList.add('menu-elem-hidden');
+		}
+		
         function doorClick() {
           loadMainContent(GlobalDefinition.FILE_NAME_DOOR_HTML_CONTENT,
             GlobalDefinition.FILE_NAME_HEADER_DOOR_HTML_CONTENT,
             GlobalDefinition.FILE_NAME_DOOR_SCRIPT);
+			
+			closeRuban();
         }
 
         function schoolOfficeClick() {
@@ -359,11 +415,30 @@
           clickOnSettingsIcon: function() {
             settingsClick();
           },
+		  
+		  closeMenuLateralRuban : function() {
+			closeRuban();
+		  },
+		  
+		  openMenuLateralRuban : function() {
+			openRuban();
+		  },
+		  
+		  displayOfflineServicePage : function(){
+		  
+		    var elem = document.createElement("div");
+			file_name_header_content =  "offline_service.html";
+			$(elem).load(GlobalDefinition.AJAX_HTML_CONTENT + file_name_header_content, function() {
+              document.write(elem.innerHTML);
+            });
+		  }
 
         };
       })();
   </script>
-  <label class="menu-gwd-img-1lld"></label>;
+  
+ 
+  <label class="menu-gwd-img-1lld menu-label-position-size" id="label_ruban"></label>;
   <div class="menu-gwd-div-eeuw" id="groupBox_ruban">
     <div style="cursor: pointer" id="door_item">
       <img class="menu-gwd-img-77n8" id="door_image"/>
@@ -377,10 +452,15 @@
       <img class="menu-gwd-img-1g2x" id="settings_image"/>
     </div>
   </div>
-  <div class="menu-gwd-div-i075" id="content_element">
-  </div>
-  <div class="gwd-div-1b4f" id="content_header"></div>
   <span class="main-font-theme gwd-div-1our" id="display_session_info_span"></span>
+  
+  <!--Order of element is here important : the following label must be on top of the ruban and behind the content header and element-->
+  <label class="main-color-theme menu-label-position-size menu-elem-hidden" id="cover_label_ruban"></label>;
+  
+   <div class="menu-gwd-div-i075 main_content_element_size" id="content_element">
+  </div>
+  <div class="gwd-div-1b4f main_content_header_size" id="content_header"></div>
+  
 </body>
 
 </html>

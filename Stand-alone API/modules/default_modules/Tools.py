@@ -4,36 +4,11 @@
 """
 
 import xml.etree.ElementTree
-import os 
-import datetime
+import datetime, time
 import unicodedata
+import struct
 
 from default_modules.Error import _Error
-
-# In[]print sys.path
-
-def pathToSettingsFile():
-        """ The settings file is in the parent folder of the directory "modules"
-            because script can be inside childs directory in "modules", we have to check if 
-            the parent folder of the current directory (the directory from where the script is executes)
-            is the directory "modules". Then we will just have to get the parent directory
-        """
-        PARENT_DIRECTORY = "modules"
-        NAME_FILE = "SettingsFile.xml"
-        PATH_SEPARATOR = os.path.join(" ","")[1:]
-    
-        path = os.getcwd()
-        array =  path.split(PATH_SEPARATOR)
-        
-        while len(array)>0 and array[len(array)-1]!=PARENT_DIRECTORY:
-            path = os.path.dirname(path)
-            array =  path.split(PATH_SEPARATOR)
-        
-        if len(array)>0:
-            return os.path.join(os.path.dirname(path), NAME_FILE) #path = "...\modules"
-        
-        return ""
-
  
 # In[]
 def normalizeString(text, codex):
@@ -48,7 +23,8 @@ class ReadXmlFile :
         Retrieve all the needed data from the settings file 
     """
     
-    PATH_TO_FILE = pathToSettingsFile()
+    def __init__(self, path_to_settings_file):
+        self.PATH_TO_FILE = path_to_settings_file
     
     TIME_SEPARATOR = '-'
     NAME_DIV_STUDY_HOUR = "Study_time"
@@ -61,72 +37,82 @@ class ReadXmlFile :
     NAME_FIELD_SERVER_NAME = "Sql_server_domain_name"
     NAME_FIELD_DATABASE_NAME = "Sql_database_name"
     NAME_FIELD_EXIT_BREAK = "Length_exit_break"
+    NAME_FIELD_NAMED_PIPE = "Named_pipe"
     
     
-    @staticmethod
-    def loadFile():
+    def loadFile(self):
         ''' return the settings file loaded into memory '''
         try :
-            return xml.etree.ElementTree.parse(ReadXmlFile.PATH_TO_FILE).getroot()
+            return xml.etree.ElementTree.parse(self.PATH_TO_FILE).getroot()
         except PermissionError as e:
-            value = "Impossible d'accèder au fichier :"+ReadXmlFile.PATH_TO_FILE
+            value = "Impossible d'accèder au fichier :"+self.PATH_TO_FILE
             value += "\n"+str(e)
             _Error.raiseError(value)
         except Exception as e:  
-                value = "Problème avec le fichier :"+ReadXmlFile.PATH_TO_FILE
+                value = "Problème avec le fichier :"+self.PATH_TO_FILE
                 value +="\n"+str(type(e))
                 value +="\n"+str(e.args)
                 value +="\n"+str(e)
                 _Error.raiseError(value)
         return None
-    @staticmethod
-    def getExitBreak():
-        e = ReadXmlFile.loadFile()
+    
+    
+    def getNamedPipe(self):
+        e = self.loadFile()
         
         for elem in e.findall('field'):
-            if elem.get('name') == ReadXmlFile.NAME_FIELD_EXIT_BREAK:
-                return datetime.datetime.strptime(elem.get(ReadXmlFile.NAME_FIELD_EXIT_BREAK), Timer.TIME_FORMAT).time()
-    @staticmethod
-    def getStartSchool():
-        return ReadXmlFile.getStudyHours()[0].Start
+            if elem.get('name') == self.NAME_FIELD_NAMED_PIPE:
+                return elem.get(self.NAME_FIELD_NAMED_PIPE)
     
-    @staticmethod
-    def getDatabaseCredential():
+    
+    def getExitBreak(self):
+        e = self.loadFile()
+        
+        for elem in e.findall('field'):
+            if elem.get('name') == self.NAME_FIELD_EXIT_BREAK:
+                return datetime.datetime.strptime(elem.get(self.NAME_FIELD_EXIT_BREAK), Timer.TIME_FORMAT).time()
+    
+    
+    def getStartSchool(self):
+        return self.getStudyHours()[0].Start
+    
+    
+    def getDatabaseCredential(self):
         data ={}
         
-        e = ReadXmlFile.loadFile()
+        e = self.loadFile()
         
         for elem in e.findall('div'):
-            if elem.get('name') == ReadXmlFile.NAME_DIV_DATABASE_PARMS:
+            if elem.get('name') == self.NAME_DIV_DATABASE_PARMS:
                 for item in elem.findall('item'):
                     data[item.get('name')] = item.text
         #end loop
                     
         return {
-                    'Driver': '{' + data[ReadXmlFile.NAME_FIELD_DRIVER_NAME] +'}',
-                    'Server': ''+data[ReadXmlFile.NAME_FIELD_SERVER_NAME] +'', #.\SQLEXPRESS  (localdb)\MSSQLLocalDB
-                    'Database': ''+ data[ReadXmlFile.NAME_FIELD_DATABASE_NAME] +'',
+                    'Driver': '{' + data[self.NAME_FIELD_DRIVER_NAME] +'}',
+                    'Server': ''+data[self.NAME_FIELD_SERVER_NAME] +'', #.\SQLEXPRESS  (localdb)\MSSQLLocalDB
+                    'Database': ''+ data[self.NAME_FIELD_DATABASE_NAME] +'',
                     'Trusted_Connection' : 'yes',
                 	'autocommit': True,
                 }
-    @staticmethod
-    def getStudyHours():
+    
+    def getStudyHours(self):
         """ get all he study hour of the school"""
         hours = []
 
-        e = ReadXmlFile.loadFile()
+        e = self.loadFile()
         #parse the XML file
         
         #get the correct xml element that contains all the study hours
         for elem in e.findall('div'):
-            if elem.get('name') == ReadXmlFile.NAME_DIV_STUDY_HOUR:#element with study hours
+            if elem.get('name') == self.NAME_DIV_STUDY_HOUR:#element with study hours
                 for item in elem.findall('item'):#loop into all the hours
                     value = item.text#string of the time slot (write into the file as "start-end")
                     
                     """In all the timeslot, when we reach the lunch time we will see "DÉJEUNER" and not a timeslot
                     bacause the lunch time is stored separatly"""
-                    if value.encode('utf-8') != ReadXmlFile.TAG_LUNCH_TIME and value != ReadXmlFile.TAG_LUNCH_TIME:#check if the current hour is the lunch time
-                        _time = value.split(ReadXmlFile.TIME_SEPARATOR)#get the start and end of the timeslot
+                    if value.encode('utf-8') != self.TAG_LUNCH_TIME and value != self.TAG_LUNCH_TIME:#check if the current hour is the lunch time
+                        _time = value.split(self.TIME_SEPARATOR)#get the start and end of the timeslot
                         
                         #convert the element into a time object
                         start = Timer.stringToTime(_time[0])
@@ -137,8 +123,8 @@ class ReadXmlFile :
                             hours.append(timeslot)#add the timeslot into the list
                     else:#if the current hour is the lunch hour
                         for elem in e.findall('field'):
-                            if elem.get('name') == ReadXmlFile.NAME_FIELD_LUNCH_TIME:#get the element that contains the lunch time
-                                _time = elem.get(ReadXmlFile.NAME_FIELD_LUNCH_TIME).split(ReadXmlFile.TIME_SEPARATOR)#get the timeslot as string
+                            if elem.get('name') == self.NAME_FIELD_LUNCH_TIME:#get the element that contains the lunch time
+                                _time = elem.get(self.NAME_FIELD_LUNCH_TIME).split(self.TIME_SEPARATOR)#get the timeslot as string
                                 #convert the string as a time object
                                 start = Timer.stringToTime(_time[0])
                                 end = Timer.stringToTime(_time[1])
@@ -151,17 +137,17 @@ class ReadXmlFile :
                         #test 
         return hours
     
-    @staticmethod
-    def getStudyDays():
+    
+    def getStudyDays(self):
         """Return the list of all the school day
         All the day of the school are saved as integer where sunday is 0"""
         days = []
         
-        e = ReadXmlFile.loadFile()
+        e = self.loadFile()
         
         for elem in e.findall('div'):
             
-            if elem.get('name') == ReadXmlFile.NAME_DIV_SCHOOL_DAYS:#element with all the day of school
+            if elem.get('name') == self.NAME_DIV_SCHOOL_DAYS:#element with all the day of school
                 for item in elem.findall('item'):#loop into all the days
                     day = (int(item.text) -1)%7 #in pyhton monday is 0
                     days.append(day) 
@@ -178,6 +164,9 @@ class Timer :
     """
     TIME_FORMAT = "%H:%M" #time are save as string into the database
     
+    def __init__(self, path_to_settings_file):
+        self.ReadXmlFile = ReadXmlFile(path_to_settings_file)
+        
     class TimeSlot():
         def __init__(self, field1, field2):
             self.Start = field1
@@ -214,8 +203,8 @@ class Timer :
         return 3600*_time.hour + 60*_time.minute
     
     
-    @staticmethod
-    def waitingTimeToSecond():
+    
+    def waitingTimeToSecond(self):
         """ when the method is called retrun the number of second until the next collect of the data, accroding
         to the school hours and days. In fact the collect of the data can happened only between two hours of study
         """
@@ -223,12 +212,12 @@ class Timer :
         _time = today.time()
         day_of_week = today.weekday()
         
-        school_hours = ReadXmlFile.getStudyHours()
+        school_hours = self.ReadXmlFile.getStudyHours()
         
         if len(school_hours)==0 :
             return 3600 #1h
         
-        if not day_of_week in ReadXmlFile.getStudyDays():
+        if not day_of_week in self.ReadXmlFile.getStudyDays():
             return Timer.substractTimeToSecond(Timer.stringToTime("23:59"), _time) + Timer.timeToSecond(school_hours[0].Start)
             """ |(not a school day)
                 | <- 8h00 (= first school hour = school_hours[0].Start)
@@ -278,3 +267,37 @@ class Timer :
             """ when current_time is inferior to the first school hour, we just need to until that time """
 
 # In[]
+
+class NamedPipe:
+    def __init__(self, pipeName):
+        self.pipeName = pipeName
+        
+        file = None
+        msg = None
+        num_try = 0;
+        
+        while num_try<30:
+            try:
+             file = open(r'\\.\pipe\{0}'.format(self.pipeName), 'r+b', 0)
+             break
+            except FileNotFoundError:
+               msg =  "Impossible d'ouvrir le pipe nommé (pipe inexistant)"
+            except Exception as e:
+                 msg = "Erreur lors de l'ouverture du pipe nommé : \n"+str(e)
+            time.sleep(1)
+            num_try+=1
+        
+        if msg!=None :
+            _Error.raiseError(msg)
+        self.serverPipe =  file
+        
+        
+    def write(self, data):
+
+        try :
+            self.serverPipe.write(struct.pack('I', len(data)) + str.encode(data))   # Write str length and str
+            self.serverPipe.seek(0)                               # EDIT: This is also necessary
+        except Exception as e:
+         _Error.raiseError("Erreur lors de l'écriture dans le pipe nommé : \n"+str(e))
+    
+            

@@ -6,11 +6,13 @@ namespace WindowsFormsApplication1.Forms
 {
     public partial class SettingsAccessToServerFile : Form
     {
-        private string path_to_folder="";
+        private string path_to_folder;
 
         public SettingsAccessToServerFile()
         {
             InitializeComponent();
+            path_to_folder = "";
+
 
             string path_to_file = ToolsClass.Settings.getPathToUrlFile();
             if(string.IsNullOrEmpty(path_to_file))

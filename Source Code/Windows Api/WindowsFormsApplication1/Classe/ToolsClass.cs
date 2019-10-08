@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 
 using ParmsMailsSender = ToolsClass.Tools.ParmsMailsSender;
 using ParmsStudentsStateFile = ToolsClass.Tools.ParmsStudentsStateFile;
-
+using Microsoft.VisualBasic.FileIO;
 
 namespace ToolsClass
 {
@@ -29,7 +29,6 @@ namespace ToolsClass
         public const string NAME_HTML_START_PAGE = "menu.html";
         public const string NAME_HTML_BANNED_PAGE = "banned_page.html";
         public const string NAME_ERROR_AUDIO = "error_audio"; //name of the sound played when student can't leave the school
-        public const string NAME_STUDENTS_STATE_FILE = "regime_students";//student state (first name, second name, division, sex, half-boarder/external)
         public const string NAME_DEFAULT_STUDENT_PHOTO = "default_student_photo.png";
         public const string NAME_LOG_ERROR_FILE = "log_error.txt";
         //folder names
@@ -44,6 +43,7 @@ namespace ToolsClass
         public const string FOLDER_NAME_DOWLOAD_FILE = "download_files";
         public const string PRIVATE_FOLDERS_NAME = "private";
         public const string PUBLIC_FOLDERS_NAME = "public";
+        public const string TMP_FILES_FOLDER = "tempData";
 
         //path to files
         public static string PATH_TO_TOOLS_FILE = CURRENT_DIRECTORY + SEPARATOR + NAME_TOOLS_FILE;
@@ -61,6 +61,8 @@ namespace ToolsClass
         public static string PATH_TO_DEFAULT_STUDENT_PHOTO = PATH_TO_FOLDER_IMAGES_HTML_PAGES + PUBLIC_FOLDERS_NAME + SEPARATOR + NAME_DEFAULT_STUDENT_PHOTO;
         public static string PATH_TO_HTML_START_PAGE = PATH_TO_FOLDER_HTML_PAGES + PUBLIC_FOLDERS_NAME + SEPARATOR + NAME_HTML_START_PAGE;
         public static string PATH_TO_HTML_BANNED_PAGE = PATH_TO_FOLDER_HTML_PAGES + PUBLIC_FOLDERS_NAME + SEPARATOR + NAME_HTML_BANNED_PAGE;
+
+        public static string PATH_TO_TMP_FOLDER = CURRENT_DIRECTORY + SEPARATOR + TMP_FILES_FOLDER;
 
         public const string AJAX_IMAGE_TAG = "im"; //ex : src="images.ashx?im=NameImage.png"
         public const string AJAX_AUDIO_TAG = "s";
@@ -162,6 +164,8 @@ namespace ToolsClass
         public static readonly char[] SPECIAL_CHAR_STUDENT_NAME = new char[] { '\'', ' ', '-' };
         public static readonly char[] SPECIAL_CHAR_STUDENT_DIVISION = new char[] { '\'', ' ', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
+        public static string NAMED_PIPE = Settings.NamedPipe;
+        public static Boolean EXTERNAL_DATABASE_OFFLINE = true;
     }
 
 
@@ -255,6 +259,17 @@ namespace ToolsClass
             return date_time.ToString(Definition.DATE_FORMAT, CultureInfo.InvariantCulture);
         }
 
+        public static string timeToStringFromDateTime(DateTime date_time)
+        {
+            /*Convert a dateTime object into a string representation of that dateTime as date and time and according to the set format*/
+            return date_time.ToString(Definition.TIME_FORMAT, CultureInfo.InvariantCulture);
+        }
+
+        public static TimeSpan TimeFromDateTimeToTimeSpan(DateTime date_time)
+        {
+            return new TimeSpan(0, date_time.Hour, date_time.Minute, date_time.Second, date_time.Millisecond);
+        }
+
         public static string timeToStringFromTimeSpan(TimeSpan time)
         {
             /*Convert a TimeSpan object into a string representation of that TimeSpan according to the set format*/
@@ -272,7 +287,6 @@ namespace ToolsClass
 
             return time;
         }
-
 
         public static DateTime stringToDateTime (string text_date)
         {
@@ -474,8 +488,20 @@ namespace ToolsClass
             return array;
         }
 
+        private const int NO_HALF_BOARD_DAY_VALUE = 0;//value when student is external for lunch
+        private const int HALF_BOARD_DAY_VALUE = 1; //value when student eat at school for lunch
 
-        public static int [] getNumericHalfBoardDaysFromString(string half_board_days)
+        public static Tuple<int, bool> isHalBoardDay(int[] halBoardDays, int day_of_week)
+        {
+            if (halBoardDays == null || halBoardDays.Length == 0)
+                return Tuple.Create(Definition.ERROR_INT_VALUE, false);
+            if (halBoardDays[day_of_week] == HALF_BOARD_DAY_VALUE)
+                return Tuple.Create(Definition.NO_ERROR_INT_VALUE, true);
+
+            return Tuple.Create(Definition.NO_ERROR_INT_VALUE, false);
+        }
+
+        public static int [] getNumericHalfBoardDaysFromString(ParmsStudentsStateFile parms , string half_board_days)
         {
             /*When we read the student state file that contains all the informations about student (as
              * last name, fisrt name, division, sex and half-board days), the half-board days are stored in a specific format
@@ -487,14 +513,13 @@ namespace ToolsClass
              * For example if half_board_days="Mon-Thu-Fri", then the function return [0,1,0,0,1,1,0]
             */
             int size = 7;
-            int no_half_board_day_value = 0;//value when student is external for lunch
-            int half_board_day_value = 1; //value when student eat at school for lunch
+
 
             int[] tab_days = new int[size];//array that represent all the days of a week
 
             for(int i=0;i< size;i++)
             {
-                tab_days[i] = no_half_board_day_value; //set value to 0 (student is external)
+                tab_days[i] = NO_HALF_BOARD_DAY_VALUE; //set value to 0 (student is external)
             }
 
             if (half_board_days == null)//if the student is external
@@ -502,7 +527,6 @@ namespace ToolsClass
                 return tab_days;
             }
 
-            ParmsStudentsStateFile parms = Settings.StudentsStateFileParameters;
             string[] split_text = half_board_days.Split(parms.separatorDays);
 
             for(int i=0; i<split_text.Length;i++)
@@ -511,28 +535,28 @@ namespace ToolsClass
                 string day = split_text[i];
                 if (day == parms.sundayShortname)
                 {
-                    tab_days[0] = half_board_day_value;
+                    tab_days[0] = HALF_BOARD_DAY_VALUE;
                 }else if (day == parms.mondayShortname)//get the format that represent monday in the string (for example "Mon")
                 {
-                    tab_days[1] = half_board_day_value;
+                    tab_days[1] = HALF_BOARD_DAY_VALUE;
                 }else if(day == parms.tuesdayShortname)
                 {
-                    tab_days[2] = half_board_day_value;
+                    tab_days[2] = HALF_BOARD_DAY_VALUE;
                 }else if (day == parms.tuesdayShortname)
                 {
-                    tab_days[2] = half_board_day_value;
+                    tab_days[2] = HALF_BOARD_DAY_VALUE;
                 }else if (day == parms.wednesdayShortname)
                 {
-                    tab_days[3] = half_board_day_value;
+                    tab_days[3] = HALF_BOARD_DAY_VALUE;
                 }else if (day == parms.thursdayShortname)
                 {
-                    tab_days[4] = half_board_day_value;
+                    tab_days[4] = HALF_BOARD_DAY_VALUE;
                 }else if (day == parms.fridayShortname)
                 {
-                    tab_days[5] = half_board_day_value;
+                    tab_days[5] = HALF_BOARD_DAY_VALUE;
                 }else if (day == parms.saturdayShortname)
                 {
-                    tab_days[6] = half_board_day_value;
+                    tab_days[6] = HALF_BOARD_DAY_VALUE;
                 }
 
             }
@@ -927,15 +951,49 @@ namespace ToolsClass
             return output;
         }
 
-        public static string normalizeStudentInfo(string text, bool name=false, bool division=false, bool sex=false, bool halboardDays=false)
+
+        public static bool containsNonLettersChar(string text, char[] special_char_array)
+        {
+            bool notALetter = true;
+
+            foreach (char c in text)
+            {
+                if (!Char.IsLetter(c))
+                {
+                    notALetter = true;
+                }else
+                {
+                    notALetter = false;
+                }
+
+                if (special_char_array != null)
+                {
+                    foreach (char temp_c in special_char_array)
+                    {
+                        if (c == temp_c)
+                        {
+                            notALetter = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (notALetter)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static bool isNormalizedStudentInfo(string text, bool name=false, bool division=false, bool sex=false, bool halboardDays=false)
         {
             if(!(name ^ division ^ sex ^ halboardDays))//only one option at a time
-                return null;
+                return false;
 
             if(text==null)
-                return null;
+                return false;
             if (text.Length == 0)
-                return "";
+                return false;
 
             char[] special_char;
 
@@ -944,9 +1002,9 @@ namespace ToolsClass
             else if (division || sex || halboardDays)
                 special_char = Definition.SPECIAL_CHAR_STUDENT_DIVISION;
             else
-                return null;
+                return false;
 
-            return removeNonLettersChar(text, "", special_char);
+            return !containsNonLettersChar(text, special_char);
         }
 
         public static string removeDiacritics(string text)
@@ -995,83 +1053,6 @@ namespace ToolsClass
         {
             return removeNonAlphaChar(removeDiacritics(text));
         }
-
-
-        public static int readStudentsStateFile()
-        {
-            ParmsStudentsStateFile parms = Settings.StudentsStateFileParameters;
-            try
-            {
-                DataBase database = new DataBase();
-
-                string path_to_file = Definition.PATH_TO_FOLDER_DOCUMENT + Settings.StudentSateFileName;
-                int count;
-                int res;
-                string line = "";
-                string[] values;
-                List<StudentData> list_student = new List<StudentData>();
-                StudentData student = new StudentData();
-
-                using (var reader = new StreamReader(path_to_file, Encoding.GetEncoding("iso-8859-1")))
-                {
-                    reader.ReadLine(); //drop out the first line of the file which is made for description
-                    count = 1;
-                    student.toDefault();
-                    while (!reader.EndOfStream)
-                    {
-                        line = reader.ReadLine();
-                        values = line.Split(Definition.CSV_COLUMN_SEPARATOR);
-
-                        if (count%100 == 0)//we save student into the database block of n students by block of n students at once
-                        {
-                            res = database.updateStudentTable(list_student);
-                            if(res != Definition.NO_ERROR_INT_VALUE)
-                            {
-                                Error.details = "Ligne du fichier correspondante : " + line;
-                                Error.error = "CASITDB";
-                                return res;
-                            }
-                            list_student.Clear();
-                            count = 1;
-                        }
-
-                        
-                        student.toDefault();
-                        student.lastName = normalizeStudentInfo(values[parms.lastNameIndex], name:true);//Last name (string)
-                        student.firstName = normalizeStudentInfo(values[parms.firstNameIndex], name:true);// First name (string)
-                        student.division = normalizeStudentInfo(values[parms.divisionIndex], division:true); // division (string)
-                        student.sex = Tools.SexIntFromString(normalizeStudentInfo(values[parms.sexIndex], sex:true), parms.femaleShortname); //sex (int)
-                        student.halfBoardDays = Tools.getNumericHalfBoardDaysFromString(normalizeStudentInfo(values[parms.halfBoardDaysIndex], halboardDays:true)); //half-board regime (string)
-                        
-                        list_student.Add(student);
-
-                        count++;
-                    }
-
-                    if (list_student.Count != 0)//we save student into the database block of 200 students by block of 200 students at once
-                    {
-                        res = database.updateStudentTable(list_student);
-                        if (res != Definition.NO_ERROR_INT_VALUE)
-                        {
-                            Error.details = "Ligne du fichier correspondante : " + line;
-                            Error.error = "CASITDB";
-                            return res;
-                        }
-                    }
-                }
-                return Definition.NO_ERROR_INT_VALUE;
-
-            }
-            catch (Exception e)
-            {
-                Error.details = "" + e;
-                Error.error = "CATSSF";
-            }
-
-            return Definition.ERROR_INT_VALUE;
-
-        }
-
 
 
         public static void writeUrlServerToFile(string url)
@@ -1169,6 +1150,7 @@ namespace ToolsClass
             public string firstName; //first name
             public string division; //division 
             public int sex; //sex as integer
+            public string labelRegime;
             public string idRFID; //RFID id
             public int[] halfBoardDays;
             /*array that contains represent all the days of a working week and indicate at the corresponding index 
@@ -1183,6 +1165,7 @@ namespace ToolsClass
                 firstName = "";
                 division = "";
                 sex = -1;
+                labelRegime = null;
                 idRFID = "";
                 halfBoardDays = new int[] { };
                 error = false;
@@ -1462,6 +1445,7 @@ namespace ToolsClass
             public int divisionIndex;
             public int sexIndex;
             public int halfBoardDaysIndex;
+            public int exitRegimeIndex;
             public string femaleShortname;
             public string maleShortname;
             public string mondayShortname;
@@ -1472,6 +1456,8 @@ namespace ToolsClass
             public string saturdayShortname;
             public string sundayShortname;
             public char separatorDays;
+            public char separatorCsv;
+            public bool encapsulationByQuote;
 
 
             public void toDefault()
@@ -1481,6 +1467,7 @@ namespace ToolsClass
                 divisionIndex = -1;
                 sexIndex = -1;
                 halfBoardDaysIndex = -1;
+                exitRegimeIndex = -1;
                 femaleShortname = null;
                 maleShortname = null;
                 mondayShortname = null;
@@ -1491,6 +1478,8 @@ namespace ToolsClass
                 saturdayShortname = null;
                 sundayShortname = null;
                 separatorDays = ' ';
+                separatorCsv = ';';
+                encapsulationByQuote = false;
             }
 
         }
@@ -1538,6 +1527,56 @@ namespace ToolsClass
         }
 
 
+        public struct StudentExitRegimeAuthorization
+        {
+            private int id;
+            public string name;
+            public TimeSpan period;
+            public TimeSpan start;
+            public TimeSpan end;
+
+            public void toDefault()
+            {
+                id = -1;
+                period = new TimeSpan(0, 0, 0);
+                start = new TimeSpan(0, 0, 0);
+                period = new TimeSpan(0, 0, 0);
+            }
+
+            public int Id
+            {
+                get { return id; }
+                set { id = value; }
+            }
+
+            public static StudentExitRegimeAuthorization Zero;
+        }
+
+
+
+        public struct StudentExitRegime
+        {
+            /*Structure that store time slot in general*/
+
+            private int id;//could be used
+            public string name;
+            public List<string> authorizations;//store only name (which must be unique into the database)
+
+            public void toDefault()
+            {
+                id = -1;
+                name = "";
+                authorizations = new List<string>();
+            }
+
+            public int Id
+            {
+                get { return id; }
+                set { id = value; }
+            }
+        }
+
+
     }
 
 
@@ -1567,6 +1606,7 @@ namespace ToolsClass
         private const string XML_ATTRIBUTE_VALUE_COLUMN_FIRST_NAME = "First_name";
         private const string XML_ATTRIBUTE_VALUE_COLUMN_DIVISION = "Division";
         private const string XML_ATTRIBUTE_VALUE_COLUMN_SEX = "Sex";
+        private const string XML_ATTRIBUTE_VALUE_COLUMN_EXIT_REGIME = "Exit_regime";
         private const string XML_ATTRIBUTE_VALUE_COLUMN_HALF_BOARD_DAYS = "Half_board_days";
         private const string XML_ATTRIBUTE_VALUE_FEMALE_STUDENTS_STATE_FILE = "Female";
         private const string XML_ATTRIBUTE_VALUE_MALE_STUDENTS_STATE_FILE = "Male";
@@ -1578,6 +1618,8 @@ namespace ToolsClass
         private const string XML_ATTRIBUTE_VALUE_SATURDAY_STUDENTS_STATE_FILE = "Sat";
         private const string XML_ATTRIBUTE_VALUE_SUNDAY_STUDENTS_STATE_FILE = "Sun";
         private const string XML_ATTRIBUTE_VALUE_SEPARATOR_DAYS_STUDENTS_STATE_FILE = "Separator_days";
+        private const string XML_ATTRIBUTE_VALUE_SEPARATOR_CSV_STUDENTS_STATE_FILE = "Separator_csv";
+        private const string XML_ATTRIBUTE_VALUE_ENCAPSULATION_QUOTE_STUDENT_STATE_FILE = "Encapsulation_quote";
         private const string XML_ATTRIBUTE_VALUE_MAIL_ADRESS = "Mail_adress";
         private const string XML_ATTRIBUTE_VALUE_MAIL_PASSWORD = "Password";
         private const string XML_ATTRIBUTE_VALUE_MAIL_SERVER_NAME_SMTP = "SMTP_sever";
@@ -1590,7 +1632,6 @@ namespace ToolsClass
         private const string XML_ATTRIBUTE_VALUE_LUNCH_TIME = "Lunch_time";
         private const string XML_ATTRIBUTE_VALUE_SCHOOL_DAYS = "School_days";
         private const string XML_ATTRIBUTE_VALUE_FILE_NAME_ERROR_AUDIO = "Error_audio_name";
-        private const string XML_ATTRIBUTE_VALUE_FILE_NAME_STUDENT_STATE_FILE = "Student_state_file";
         private const string XML_ATTRIBUTE_VALUE_SCHOOL_NAME = "School_name";
         private const string XML_ATTRIBUTE_VALUE_LIST_PARMS_STUDENT_PHOTO = "Student_photo_parms";
         private const string XML_ATTRIBUTE_VALUE_ORDER_ELEMENTS_STUDENT_PHOTO = "Order_element";
@@ -1601,6 +1642,8 @@ namespace ToolsClass
         private const string XML_ATTRIBUTE_VALUE_SQL_DRIVER_NAME = "Sql_driver_name";
         private const string XML_ATTRIBUTE_VALUE_SQL_DATABASE_NAME = "Sql_database_name";
         private const string XML_ATTRIBUTE_VALUE_EXIT_BAN_REASONS_LIST = "Exit_ban_reasons_list";
+        private const string XML_ATTRIBUTE_VALUE_NAMED_PIPE = "Named_pipe";
+        private const string XML_ATTRIBUTE_VALUE_EXIT_REGIME_ACTIVATION_SATE = "Exit_regime_activation_state";
 
 
         public static string ServerIpAdress
@@ -1619,6 +1662,60 @@ namespace ToolsClass
             {
                 XmlHelper.changeXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
                                        Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_IP, value);
+            }
+
+        }
+
+        public static string NamedPipe
+        {
+            /*By using the path to the XML file define by the constant expression PATH_TO_TOOLS_FILE
+             * and using the desired xml attribute (like XML_ATTRIBUTE_IP or XML_ATTRIBUTE_Port)
+             * the function change the acutal value of the corresponding element by the new string value ipl
+            */
+            get
+            {
+                return XmlHelper.readXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
+                                            Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_NAMED_PIPE);
+            }
+
+            set
+            {
+                XmlHelper.changeXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
+                                       Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_NAMED_PIPE, value);
+            }
+
+        }
+
+        public static bool ExitRegimeActivationState
+        {
+            /*By using the path to the XML file define by the constant expression PATH_TO_TOOLS_FILE
+             * and using the desired xml attribute (like XML_ATTRIBUTE_IP or XML_ATTRIBUTE_Port)
+             * the function change the acutal value of the corresponding element by the new string value ipl
+            */
+            get
+            {
+                string res = XmlHelper.readXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
+                                            Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_EXIT_REGIME_ACTIVATION_SATE);
+
+                int state = 0;
+                int.TryParse(res, out state);
+
+                if (state == 1)
+                    return true;
+                else
+                    return false;
+            }
+
+            set
+            {
+                int val;
+                if (value)
+                    val = 1;
+                else
+                    val = 0;
+
+                XmlHelper.changeXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
+                                       Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_EXIT_REGIME_ACTIVATION_SATE, val);
             }
 
         }
@@ -1839,7 +1936,8 @@ namespace ToolsClass
                 XML_ATTRIBUTE_VALUE_MONDAY_STUDENTS_STATE_FILE,XML_ATTRIBUTE_VALUE_TUESDAY_STUDENTS_STATE_FILE,
                 XML_ATTRIBUTE_VALUE_WEDNESDAY_STUDENTS_STATE_FILE,XML_ATTRIBUTE_VALUE_THURSDAY_STUDENTS_STATE_FILE,
                 XML_ATTRIBUTE_VALUE_FRIDAY_STUDENTS_STATE_FILE,XML_ATTRIBUTE_VALUE_SATURDAY_STUDENTS_STATE_FILE, XML_ATTRIBUTE_VALUE_SUNDAY_STUDENTS_STATE_FILE,
-                XML_ATTRIBUTE_VALUE_SEPARATOR_DAYS_STUDENTS_STATE_FILE });
+                XML_ATTRIBUTE_VALUE_SEPARATOR_DAYS_STUDENTS_STATE_FILE, XML_ATTRIBUTE_VALUE_COLUMN_EXIT_REGIME,  XML_ATTRIBUTE_VALUE_SEPARATOR_CSV_STUDENTS_STATE_FILE, XML_ATTRIBUTE_VALUE_ENCAPSULATION_QUOTE_STUDENT_STATE_FILE });
+
 
                 List<string> elements = XmlHelper.readXmlListElement(Definition.PATH_TO_TOOLS_FILE, Definition.SECTION_TAG_XML_FILE, Definition.ATTRIBUTE_ELEMENT_XML_FILE,
                                               XML_ATRIBUTE_VALUE_STUDENTS_STATE_FILE_PARMS, Definition.XML_TAG_FOR_ITEM,
@@ -1847,11 +1945,27 @@ namespace ToolsClass
 
                 try
                 {
-                    parms.lastNameIndex = Int32.Parse(elements[0]);
-                    parms.firstNameIndex = Int32.Parse(elements[1]);
-                    parms.divisionIndex = Int32.Parse(elements[2]);
-                    parms.sexIndex = Int32.Parse(elements[3]);
-                    parms.halfBoardDaysIndex = Int32.Parse(elements[4]);
+                    int index = 0;
+
+                    Int32.TryParse(elements[0], out index);
+                    parms.lastNameIndex = index;
+
+                    index = 0;
+                    Int32.TryParse(elements[1], out index);
+                    parms.firstNameIndex = index;
+
+                    index = 0;
+                    Int32.TryParse(elements[2], out index);
+                    parms.divisionIndex = index;
+
+                    index = 0;
+                    Int32.TryParse(elements[3], out index);
+                    parms.sexIndex = index;
+
+                    index = 0;
+                    Int32.TryParse(elements[4], out index);
+                    parms.halfBoardDaysIndex = index;
+
                     parms.femaleShortname = elements[5];
                     parms.maleShortname = elements[6];
                     parms.mondayShortname = elements[7];
@@ -1861,10 +1975,38 @@ namespace ToolsClass
                     parms.fridayShortname = elements[11];
                     parms.saturdayShortname = elements[12];
                     parms.sundayShortname = elements[13];
-                    parms.separatorDays = (char)Int32.Parse(elements[14]);
+
+                    char c = ' ';
+                    index = -1;
+                    Int32.TryParse(elements[14], out index);
+                    if (index == -1)
+                        c = ' ';
+                    else
+                        c = (char)index;
+                    parms.separatorDays = c;
+
+
+                    index = 0;
+                    Int32.TryParse(elements[15], out index);
+                    parms.exitRegimeIndex = index;
+
+
+                    index = -1;
+                    Int32.TryParse(elements[16], out index);
+                    if (index == -1)
+                        c = ' ';
+                    else
+                        c = (char)index;
+                    parms.separatorCsv = c;
+
+
+                    bool encapsulationByQuote = false;
+                    Boolean.TryParse(elements[17], out encapsulationByQuote);
+
+                    parms.encapsulationByQuote = encapsulationByQuote;
 
                 }
-                catch(Exception e)
+                catch
                 {
                     parms.toDefault();
                 }
@@ -1893,12 +2035,13 @@ namespace ToolsClass
                 XML_ATTRIBUTE_VALUE_MONDAY_STUDENTS_STATE_FILE,XML_ATTRIBUTE_VALUE_TUESDAY_STUDENTS_STATE_FILE,
                 XML_ATTRIBUTE_VALUE_WEDNESDAY_STUDENTS_STATE_FILE,XML_ATTRIBUTE_VALUE_THURSDAY_STUDENTS_STATE_FILE,
                 XML_ATTRIBUTE_VALUE_FRIDAY_STUDENTS_STATE_FILE,XML_ATTRIBUTE_VALUE_SATURDAY_STUDENTS_STATE_FILE,
-                XML_ATTRIBUTE_VALUE_SUNDAY_STUDENTS_STATE_FILE, XML_ATTRIBUTE_VALUE_SEPARATOR_DAYS_STUDENTS_STATE_FILE });
+                XML_ATTRIBUTE_VALUE_SUNDAY_STUDENTS_STATE_FILE, XML_ATTRIBUTE_VALUE_SEPARATOR_DAYS_STUDENTS_STATE_FILE,
+                XML_ATTRIBUTE_VALUE_COLUMN_EXIT_REGIME,  XML_ATTRIBUTE_VALUE_SEPARATOR_CSV_STUDENTS_STATE_FILE, XML_ATTRIBUTE_VALUE_ENCAPSULATION_QUOTE_STUDENT_STATE_FILE});
 
                 List<string> element = new List<string>(new string[] { "" + value.lastNameIndex, ""+value.firstNameIndex,
                 ""+value.divisionIndex, ""+value.sexIndex, ""+value.halfBoardDaysIndex,value.femaleShortname,value.maleShortname,
                 value.mondayShortname,value.tuesdayShortname,value.wednesdayShortname,value.thursdayShortname,value.fridayShortname,
-                value.saturdayShortname,value.sundayShortname,""+(int)value.separatorDays});
+                value.saturdayShortname,value.sundayShortname,""+(int)value.separatorDays, ""+value.exitRegimeIndex, ""+(int)value.separatorCsv, (value.encapsulationByQuote)?bool.TrueString:bool.FalseString });
 
                 XmlHelper.changeXmlListElement(Definition.PATH_TO_TOOLS_FILE, Definition.SECTION_TAG_XML_FILE, Definition.ATTRIBUTE_ELEMENT_XML_FILE,
                                               XML_ATRIBUTE_VALUE_STUDENTS_STATE_FILE_PARMS, Definition.XML_TAG_FOR_ITEM,
@@ -2058,22 +2201,6 @@ namespace ToolsClass
                                             Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_FILE_NAME_ERROR_AUDIO, value);
             }
             
-        }
-
-
-        public static string StudentSateFileName
-        {
-            get
-            {
-                return XmlHelper.readXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
-                                             Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_FILE_NAME_STUDENT_STATE_FILE);
-            }
-
-            set
-            {
-                XmlHelper.changeXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
-                                            Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_FILE_NAME_STUDENT_STATE_FILE, value);
-            } 
         }
 
 
@@ -2242,18 +2369,6 @@ namespace ToolsClass
             Tools.copyFile(path_new_file, Definition.PATH_TO_FOLDER_AUDIO_FILES + Definition.PUBLIC_FOLDERS_NAME + Definition.SEPARATOR + file_name);
            
         }
-
-
-        public static int changeStudentStateFile(string path_new_file)
-        {
-            string file_name = Definition.NAME_STUDENTS_STATE_FILE + Path.GetExtension(path_new_file);
-            StudentSateFileName = file_name;
-
-            Tools.copyFile(path_new_file, Definition.PATH_TO_FOLDER_DOCUMENT + file_name);
-
-            return Tools.readStudentsStateFile(); //refresh the database
-        }
-
 
         public static void changeStudentPhoto(int student_table_index, string path_new_photo, string formated_photo_name, string photo_extension)
         {

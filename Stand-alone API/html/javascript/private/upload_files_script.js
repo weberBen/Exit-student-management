@@ -50,6 +50,12 @@ var UploadFiles =(
 				  register.innerHTML = register.innerHTML + "<br/>- " + "Fichier "+(index_send_files+1)+"/"+file_to_send.length+ " n'a pas peu être enregistré !";
 				  register.innerHTML = register.innerHTML + "<br/>    MOTIF : " + data[GlobalDefinition.REQUEST_MESSAGE_TO_DISPLAY];
 				  error=true;
+				  
+				  
+				  if(input_files_object[index_send_files].ErrorHandlerFunction!=null)
+				  {
+						input_files_object[index_send_files].ErrorHandlerFunction(data);
+				  }
 			  }else
 			  {
 				register.innerHTML = register.innerHTML + "<br/>- " + "Fichier "+(index_send_files+1)+"/"+file_to_send.length+ " a été enregistré avec succès";  
@@ -118,12 +124,13 @@ var UploadFiles =(
 	class UploadedFileClass
 	{
 		//create object to deal with uploaded file informations
-		constructor(elem=null, type_of_file="",valid_extension=[], binary_array=[], file_extension="",file_name="")
+		constructor(elem=null, type_of_file="",valid_extension=[], binary_array=[], error_handler_function=null, file_extension="",file_name="")
 		{
 			this._Element=elem;
 			this._TypeOfFile = type_of_file;
 			this._ValidExtensions = valid_extension;
 			this._BinaryArray = binary_array;
+			this._ErrorHandlerFunction = error_handler_function;
 			this._FileName=file_name;
 			this._FileExtension=file_extension
 			
@@ -142,6 +149,9 @@ var UploadFiles =(
 		
 		get ValidExtensions () {return this._ValidExtensions;}
 		set ValidExtensions(value) {this._ValidExtensions=value;}
+		
+		get ErrorHandlerFunction () {return this._ErrorHandlerFunction;}
+		set ErrorHandlerFunction(value) {this._ErrorHandlerFunction=value;}	
 		
 		get BinaryArray () {return this._BinaryArray;}
 		set BinaryArray(value) {this._BinaryArray=value;}	
@@ -281,12 +291,16 @@ var UploadFiles =(
 		
 	}
 	
+	function errorHandlerStudentSateFile(data)
+	{
+		
+	}
 	  
         return { //all those function are available outside the module
 
 		  initialize : function ()
 		  {
-			 
+			  
 			  var image_src = GlobalDefinition.AJAX_IMAGE + GlobalDefinition.DELETE_IMAGE;
 			  
 			  
@@ -295,6 +309,7 @@ var UploadFiles =(
 			  var container = document.getElementById("student_state_file");
 			  uploaded_object.Element = container.getElementsByTagName("input")[0];
 			  uploaded_object.TypeOfFile = GlobalDefinition.REQUEST_STUDENT_STATE_FILE;
+			  uploaded_object.ErrorHandlerFunction = errorHandlerStudentSateFile;
 
 			  input_files_object.push(uploaded_object);//add object into a list
 			  

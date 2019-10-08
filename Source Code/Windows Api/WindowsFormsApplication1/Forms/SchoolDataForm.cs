@@ -15,13 +15,18 @@ namespace WindowsFormsApplication1.Forms
 {
     public partial class SchoolDataForm : Form
     {
-        private int index_lunch_time = -1;
-        private int index_viewed_item = -1;
-        private List<StudyTime> list_time = new List<StudyTime>();
+        private int index_lunch_time;
+        private int index_viewed_item;
+        private List<StudyTime> list_time;
 
         public SchoolDataForm()
         {
             InitializeComponent();
+            index_lunch_time = -1;
+            index_viewed_item = -1;
+            list_time = new List<StudyTime>();
+
+
             //set data source for the study hours
             list_time = Settings.StudyHours;
 
