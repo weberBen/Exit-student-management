@@ -1,3 +1,13 @@
+# Automatic check up for student exit
+
+
+
+
+
+
+
+
+
 --------------------------------- Préambule ---------------------------------
 
 Cette application permet de contrôler la sortie des élèves en dehors d'un établissement. Pour ce faire, chaque élève dispose d'un identifiant RFID intégré dans son carnet, préalablement enregistré  sur cette application. Lorsque l'identifiant de l'élève sera reconnu, l'application comparera son emploi du temps habituel, son régime de demi-pension, d'éventuelles autorisations de sortie ou interdictions de sortie, les punitions à faire et celles non faites, pour en déduire s'il peut sortir de l'établissement. 
