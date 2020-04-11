@@ -35,8 +35,28 @@ That script also updates "exit ban" which will override all other authorizations
 
 ## Server side
 
+The server responses to the main requests :
 
+- if a student can leave the school
+- add an exit ban manually (that will be stored in a different table than the ban set by the script in the database)
+- add an authorization manually
+- change user parameters
 
+Because all computers in a school are locally connected the use a of server/client design has been bright to the light quickly. It allow a member of the staff to access the system anywhere in the school.
+
+Each user has a specific role associated with rights (than can be edited in a custom way). For example, no registration is needed to check if a student can leave the school, supervisory staff can add an exit ban, chef of the supervisory staff can add a new authorization but not other members of that staff. Because in small team session are used by multiple person, the add of a ban or an authorization has to be validated by a unique 4 character password (and is always asked). In other words, each ban or authorization is associated with a unique user that is not necessarily the one connected to the opened session.
+
+All the client and server side can be adapted to the school rules without modifying their source code.
+
+## Database
+
+The database has first need to be populated with the basic information on student (their first name, last name, section and their half board days). That information can be added directly through the main application from a csv file (the order of the column can be edited in the main application). Be aware that if the first and last name of students does not exactly match the ones of the external provider students will not be updated (in other words, they will always be unauthorized to leave the school until the official end of the school or if they are allowed to leave the school for lunch).
+
+For each student a unique id is associated and can/has to be manually added.
+
+## Client
+
+No need to install a software, the clients just access the server through a web browser.
 
 
 
