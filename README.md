@@ -21,7 +21,9 @@ The procedure is made up of two components:
 
 # The main characteristic
 
+<p align="center">
 <img src="/assets/system_design.png?" alt="Overview of the system design" width="450"/>
+</p>
 
 ## Web scraping
 
