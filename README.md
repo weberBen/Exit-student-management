@@ -1,10 +1,15 @@
 # Automatic checkup for daily student exit
 
 # Table of contents
+
 [Introduction](#introduction)
+
 [System design](#description)
+
 [Real world implementation](#implementation)
+
 [Application specifications](#specifications)
+
 [Installation](#installation)
 
 
@@ -27,7 +32,7 @@ The procedure is made up of two components:
 - Verify if the student has been punished and then need to stay at school or if he skip a previous punishment
 - Verify other custom rules that are school specific
 
-# The main characteristic <a name="description"></a>
+# The main characteristics <a name="description"></a>
 
 <p align="center">
 <img src="/assets/system_design.png?" alt="Overview of the system design" width="550"/>
