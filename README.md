@@ -20,7 +20,7 @@ The procedure is made up of two components:
 - Verify other custom rules that are school specific
 
 # The main characteristic
-![Image not found](/assets/system_design?raw=true "Overview of the system design")
+![Image not found](/assets/system_design.png?raw=true "Overview of the system design")
 
 ## Web scraping
 
