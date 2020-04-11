@@ -68,7 +68,7 @@ No need to install a software, the clients just access the server through a web 
 Since each student owns a liaison dairy the unique id will be added to that diary through an RFID (as hardware read only to avoid modification of the data by a student) sticker.
 
 <p align="center">
-<img src="/assets/diary_rfid.jpg?" alt="RFID stciker on a diary" width="550"/>
+<img src="/assets/diary_rfid.jpg?" alt="RFID stciker on a diary" width="400"/>
 </p>
 
 
@@ -87,25 +87,25 @@ The default ban reasons are set through the main application
 
 
 <p align="center">
-<img src="/assets/ban_client.jpg?" alt="Ban page on a client" width="550"/>
+<img src="/assets/ban_client.png?" alt="Ban page on a client" width="550"/>
 </p>
 
 The timetable of the authorization section is dynamically created based on the hours given to the main application
 
 <p align="center">
-<img src="/assets/authorization_client.jpg?" alt="Authorization page on a client" width="550"/>
+<img src="/assets/authorization_client.png?" alt="Authorization page on a client" width="550"/>
 </p>
 
-Finaly a log file can be view and dowaload for each student/classes
+Finally a log file can be viewed and download for each student/section
 
 <p align="center">
-<img src="/assets/journal_client.jpg?" alt="Log page on a client" width="550"/>
+<img src="/assets/journal_client.png?" alt="Log page on a client" width="550"/>
 </p>
 
 All the modification (ban/authorization) can be made for a single student or for the whole section
 
 <p align="center">
-<img src="/assets/search_client.jpg?" alt="Search page on a client" width="550"/>
+<img src="/assets/search_client.png?" alt="Search page on a client" width="550"/>
 </p>
 
 # Application spécification
