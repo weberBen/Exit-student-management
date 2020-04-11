@@ -20,9 +20,9 @@ The procedure is made up of two components:
 - Verify other custom rules that are school specific
 
 # The main characteristic
-![Image not found](/assets/system_design.png?raw=true "Overview of the system design")
 
-<img src="/assets/system_design.png?" alt="Your image title" width="250"/>
+<img src="/assets/system_design.png?" alt="Overview of the system design" width="450"/>
+
 ## Web scraping
 
 Lot of school use an external provider for handeling student timetable and cancled lectures, then the system 
