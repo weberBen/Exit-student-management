@@ -1,6 +1,6 @@
 # Automatic checkup for daily student exit
 
-## Intoduction
+## Motivations
 
 When middle-school (and sometimes high-school) students go out of the school supervisory staff need to check their authorizations to leave the school (for example during the lunch or when a professor is absent). At rush hours hundreds of students can leave the school at the same time. Then the staff needs to speed up the checking to reduce the flow of student. 
 
@@ -25,9 +25,15 @@ The procedure is made up of two components:
 <img src="/assets/system_design.png?" alt="Overview of the system design" width="550"/>
 </p>
 
-## Web scraping
+## External provider
 
-Lot of school use an external provider for handeling student timetable and cancled lectures, then the system 
+A lot of school uses an external provider for handling student timetable, canceled lectures and other information on students. Then the system needs to scrap all the data of this provider to populated a local database that will store the time slots when each student can exit the school. Because that part is school specific, the choice has been made to exclude the scrapping script from the main app to keep it modular as possible. The script will act on the database and then when needed the modifications will be seen by the main app which will decide according to the time and the database if a student can leave the school.
+
+Real time modification is not possible here because of the fluctuation of the network and the stability of the provider which are not being made in response to hundreds of requests in a short period of time. Then the script will update the database in the middle of each hour and a pipe between the main application and the script will notify the main application if the update has been interrupted (because of an error, of the network,...). In that case, the main application will notify all the client to proceed manually to the checkup (to avoid having students exit the school because of an old and inaccurate information).
+
+That script also updates "exit ban" which will override all other authorizations to leave the school for a student (or for a whole class). The configuration of the exit ban is up to the school because the script has to be rewritten for each school.
+
+## Server side
 
 
 
