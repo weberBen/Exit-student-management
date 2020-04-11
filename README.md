@@ -83,7 +83,30 @@ The front end is composed of a TV that will display a photo of the student, his 
 <img src="/assets/exit_client.jpg?" alt="Zoom in the request result" width="550"/>
 </p>
 
+The default ban reasons are set through the main application
 
+
+<p align="center">
+<img src="/assets/ban_client.jpg?" alt="Ban page on a client" width="550"/>
+</p>
+
+The timetable of the authorization section is dynamically created based on the hours given to the main application
+
+<p align="center">
+<img src="/assets/authorization_client.jpg?" alt="Authorization page on a client" width="550"/>
+</p>
+
+Finaly a log file can be view and dowaload for each student/classes
+
+<p align="center">
+<img src="/assets/journal_client.jpg?" alt="Log page on a client" width="550"/>
+</p>
+
+All the modification (ban/authorization) can be made for a single student or for the whole section
+
+<p align="center">
+<img src="/assets/search_client.jpg?" alt="Search page on a client" width="550"/>
+</p>
 
 # Application spécification
 
