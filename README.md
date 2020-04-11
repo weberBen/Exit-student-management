@@ -22,6 +22,7 @@ The procedure is made up of two components:
 # The main characteristic
 ![Image not found](/assets/system_design.png?raw=true "Overview of the system design")
 
+<img src="/assets/system_design.png?" alt="Your image title" width="250"/>
 ## Web scraping
 
 Lot of school use an external provider for handeling student timetable and cancled lectures, then the system 
