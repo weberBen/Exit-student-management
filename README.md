@@ -1,6 +1,14 @@
 # Automatic checkup for daily student exit
 
-## Motivations
+# Table of contents
+[Introduction](#introduction)
+[System design](#description)
+[Real world implementation](#implementation)
+[Application specifications](#specifications)
+[Installation](#installation)
+
+
+## Motivations <a name="introduction"></a>
 
 When middle-school (and sometimes high-school) students go out of the school supervisory staff need to check their authorizations to leave the school (for example during the lunch or when a professor is absent). At rush hours hundreds of students can leave the school at the same time. Then the staff needs to speed up the checking to reduce the flow of student. 
 
@@ -10,7 +18,7 @@ And the tracking of student punishment is really hard to sustain. Each day staff
 
 For all of its reason a modular system which can be adapted to the rules of a specific structure and that will do the checkup (under the supervision of a human) is a good point: no more training is needed to do the checkup because all the procedure will end up with a simple message "Authorized" or "Unauthorized" and for the specific cases student just has to be oriented to a trained person).
 
-### The checkup procedure
+### The checkup procedure 
 
 The procedure is made up of two components: 
 
@@ -19,7 +27,7 @@ The procedure is made up of two components:
 - Verify if the student has been punished and then need to stay at school or if he skip a previous punishment
 - Verify other custom rules that are school specific
 
-# The main characteristic
+# The main characteristic <a name="description"></a>
 
 <p align="center">
 <img src="/assets/system_design.png?" alt="Overview of the system design" width="550"/>
@@ -59,7 +67,7 @@ For each student a unique id is associated and can/has to be manually added.
 No need to install a software, the clients just access the server through a web browser.
 
 
-# Real word application
+# Real word application <a name="implementation"></a>
 
 <p align="center">
 <img src="/assets/technical_solution_id.png?" alt="Real world implementation of the unique id" width="450"/>
@@ -108,7 +116,7 @@ All the modification (ban/authorization) can be made for a single student or for
 <img src="/assets/search_client.png?" alt="Search page on a client" width="550"/>
 </p>
 
-# Application spécification
+# Application spécification <a name="specifications"></a>
 
 ## Server side
 
@@ -125,7 +133,7 @@ Windows app (*C#*)
 
 Python 3 script
 
-# Installation
+# Installation <a name="installation"></a>
 
 - Add the given database "Database_Students_Management" to your SQL server*
 - Add the name of your SQL server to the main application. If you don't know its name you can use the SQL server manager (download it if needed) and then click on the server instance, you use to attach the database (the name of your server is then between parenthesis). By default the server name used in the main application is "(LocalDB)\MSSQLLocalDB" 
