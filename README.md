@@ -59,7 +59,48 @@ For each student a unique id is associated and can/has to be manually added.
 No need to install a software, the clients just access the server through a web browser.
 
 
+# Real word application
 
+<p align="center">
+<img src="/assets/technical_solution.png?" alt="Real world implementation of the unique id" width="550"/>
+</p>
+
+Since each student owns a liaison dairy the unique id will be added to that diary through an RFID (as hardware read only to avoid modification of the data by a student) sticker.
+
+<p align="center">
+<img src="/assets/diary_rfid.jpg?" alt="RFID stciker on a diary" width="550"/>
+</p>
+
+
+The front end is composed of a TV that will display a photo of the student, his first and last name, his section, and the result of the request "can he leaves the school" (notice that in case of an unauthorized exit a relatively loud song is played, and can be custom).
+
+<p align="center">
+<img src="/assets/front_end.jpg?" alt="Overview of the front end" width="550"/>
+</p>
+
+
+<p align="center">
+<img src="/assets/exit_client.jpg?" alt="Zoom in the request result" width="550"/>
+</p>
+
+
+
+# Application spécification
+
+## Server side
+
+### Main application
+
+Windows app (*C#*)
+
+#### Requirements :
+
+* Microsoft .NET Framework 4.5.1 ou greater (x86 or x64)
+* SQL Server 2012 Express LocalDB
+
+### Web srcapping app
+
+Python 3 script
 
 --------------------------------- Préambule ---------------------------------
 
