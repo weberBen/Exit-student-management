@@ -62,7 +62,7 @@ No need to install a software, the clients just access the server through a web 
 # Real word application
 
 <p align="center">
-<img src="/assets/technical_solution.png?" alt="Real world implementation of the unique id" width="550"/>
+<img src="/assets/technical_solution_id.png?" alt="Real world implementation of the unique id" width="550"/>
 </p>
 
 Since each student owns a liaison dairy the unique id will be added to that diary through an RFID (as hardware read only to avoid modification of the data by a student) sticker.
