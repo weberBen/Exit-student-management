@@ -1,16 +1,12 @@
 # Automatic checkup for daily student exit
 
-# Table of contents
+## Table of contents
 
-[Introduction](#introduction)
-
-[System design](#description)
-
-[Real world implementation](#implementation)
-
-[Application specifications](#specifications)
-
-[Installation](#installation)
+- [Introduction](#introduction)
+- [System design](#description)
+- [Real world implementation](#implementation)
+- [Application specifications](#specifications)
+- [Installation](#installation)
 
 
 ## Motivations <a name="introduction"></a>
