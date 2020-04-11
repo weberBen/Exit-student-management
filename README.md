@@ -75,7 +75,7 @@ Since each student owns a liaison dairy the unique id will be added to that diar
 The front end is composed of a TV that will display a photo of the student, his first and last name, his section, and the result of the request "can he leaves the school" (notice that in case of an unauthorized exit a relatively loud song is played, and can be custom).
 
 <p align="center">
-<img src="/assets/front_end.jpg?" alt="Overview of the front end" width="600"/>
+<img src="/assets/front_end.jpg?" alt="Overview of the front end" width="700"/>
 </p>
 
 
@@ -93,7 +93,7 @@ The default ban reasons are set through the main application
 The timetable of the authorization section is dynamically created based on the hours given to the main application
 
 <p align="center">
-<img src="/assets/authorization_client.png?" alt="Authorization page on a client" width="600"/>
+<img src="/assets/authorization_client.png?" alt="Authorization page on a client" width="550"/>
 </p>
 
 Finally a log file can be viewed and download for each student/section
