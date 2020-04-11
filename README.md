@@ -2,7 +2,10 @@
 
 ## Intoduction
 
-When middle-school (and sometimes high-school) students go out of the school supervisory staff need to check their authorizations to leave the school (for example during the lunch or when a professor is absent). At rush hours hundreds of students can leave the school at the same time. Then the staff needs to speed up the checking to reduce the flow of student. At these times, mistakes can easily be done and the job of the staff gets harder. Moreover, only a few members of the staff are trained for the checking, all the administrative staff (which for small structure are important figures for students) can not proceed to the checkup because of its relative complexity (lot of information rely on the comprehension of the supervisory staff).
+When middle-school (and sometimes high-school) students go out of the school supervisory staff need to check their authorizations to leave the school (for example during the lunch or when a professor is absent). At rush hours hundreds of students can leave the school at the same time. Then the staff needs to speed up the checking to reduce the flow of student. 
+
+At these times, mistakes can easily be done and the job of the staff gets harder. Moreover, only a few members of the staff are trained for the checking, all the administrative staff (which for small structure are important figures for students) can not proceed to the checkup because of its relative complexity (lot of information rely on the comprehension of the supervisory staff).
+
 And the tracking of student punishment is really hard to sustain. Each day staff need to check if students of the last day have done their punishment, if not they have to get them during the lectures, which is often not possible. And students can in general not catch at the exit of the school because the staff need to exactly know the student. It ends up with a list of students that have not done their punishment reported from day to day by the staff give up on them in order to not accumulate the delay.
 
 For all of its reason a modular system which can be adapted to the rules of a specific structure and that will do the checkup (under the supervision of a human) is a good point: no more training is needed to do the checkup because all the procedure will end up with a simple message "Authorized" or "Unauthorized" and for the specific cases student just has to be oriented to a trained person).
@@ -18,7 +21,9 @@ The procedure is made up of two components:
 
 # The main characteristic
 
+## Web scraping
 
+Lot of school use an external provider for handeling student timetable and cancled lectures, then the system 
 
 
 
