@@ -70,6 +70,7 @@ namespace WindowsFormsApplication1.Forms
 
             ToolsClass.Settings.setPathToUrlFile(path_to_folder, file_name_textBox.Text);
 
+            MessageBox.Show("Les modifications ont été enregistré mais elles ne seront prise en compte qu'au prochain démarrage de l'application");
             this.Close();
         }
 

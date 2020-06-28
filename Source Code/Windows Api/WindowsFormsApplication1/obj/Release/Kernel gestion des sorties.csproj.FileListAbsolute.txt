@@ -204,11 +204,10 @@ C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Proj
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsStudentsStateFile.resources
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsList.resources
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsServerElements.resources
-C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.MainForm.resources
-C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Forms.SettingsLengthExitBreak.resources
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.Properties.Resources.resources
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csproj.GenerateResource.cache
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csproj.CoreCompileInputs.cache
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.csproj.CopyComplete
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.exe
 C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\Kernel gestion des sorties.pdb
+C:\Users\Xavier.weber\Desktop\NE PAS OUVRIR FICHIERS SOURCES\NE PAS TOUCHER\Projet\Code_source_gestion_des_sorties\WindowsFormsApplication1\obj\Release\WindowsFormsApplication1.MainForm.resources

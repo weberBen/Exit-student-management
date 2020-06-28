@@ -32,7 +32,6 @@
             this.update = new System.Windows.Forms.ToolStripMenuItem();
             this.nettoyerBaseDeDonnées = new System.Windows.Forms.ToolStripMenuItem();
             this.purgerLaBaseDeDonnées = new System.Windows.Forms.ToolStripMenuItem();
-            this.redémarrerLeServer = new System.Windows.Forms.ToolStripMenuItem();
             this.Settings = new System.Windows.Forms.ToolStripMenuItem();
             this.nomDeDomainDuServerSQL = new System.Windows.Forms.ToolStripMenuItem();
             this.adresseIpDuServer = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,7 +46,6 @@
             this.importerDesPhotos = new System.Windows.Forms.ToolStripMenuItem();
             this.régimesDeSortie = new System.Windows.Forms.ToolStripMenuItem();
             this.MAJBaseDeDonnées = new System.Windows.Forms.ToolStripMenuItem();
-            this.duréeDeLaPauseAutorisantLesSorties = new System.Windows.Forms.ToolStripMenuItem();
             this.longueurIdentifiantRFID = new System.Windows.Forms.ToolStripMenuItem();
             this.gestionDesDonnéesÉlèves = new System.Windows.Forms.ToolStripMenuItem();
             this.SchoolLifeOffice = new System.Windows.Forms.ToolStripMenuItem();
@@ -85,8 +83,7 @@
             // 
             this.update.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.nettoyerBaseDeDonnées,
-            this.purgerLaBaseDeDonnées,
-            this.redémarrerLeServer});
+            this.purgerLaBaseDeDonnées});
             this.update.Name = "update";
             this.update.Size = new System.Drawing.Size(140, 20);
             this.update.Text = "Mis à jour des données";
@@ -102,12 +99,6 @@
             this.purgerLaBaseDeDonnées.Name = "purgerLaBaseDeDonnées";
             this.purgerLaBaseDeDonnées.Size = new System.Drawing.Size(223, 22);
             this.purgerLaBaseDeDonnées.Text = "Purger la base de données";
-            // 
-            // redémarrerLeServer
-            // 
-            this.redémarrerLeServer.Name = "redémarrerLeServer";
-            this.redémarrerLeServer.Size = new System.Drawing.Size(223, 22);
-            this.redémarrerLeServer.Text = "Redémarrer le server";
             // 
             // Settings
             // 
@@ -170,7 +161,6 @@
             this.photosÉtudiants,
             this.régimesDeSortie,
             this.MAJBaseDeDonnées,
-            this.duréeDeLaPauseAutorisantLesSorties,
             this.longueurIdentifiantRFID,
             this.gestionDesDonnéesÉlèves});
             this.Administration.Name = "Administration";
@@ -180,7 +170,7 @@
             // SchoolData
             // 
             this.SchoolData.Name = "SchoolData";
-            this.SchoolData.Size = new System.Drawing.Size(277, 22);
+            this.SchoolData.Size = new System.Drawing.Size(238, 22);
             this.SchoolData.Text = "Information sur l\'établissement";
             // 
             // photosÉtudiants
@@ -189,7 +179,7 @@
             this.formatDesPhotos,
             this.importerDesPhotos});
             this.photosÉtudiants.Name = "photosÉtudiants";
-            this.photosÉtudiants.Size = new System.Drawing.Size(277, 22);
+            this.photosÉtudiants.Size = new System.Drawing.Size(238, 22);
             this.photosÉtudiants.Text = "Photos étudiants";
             // 
             // formatDesPhotos
@@ -207,31 +197,25 @@
             // régimesDeSortie
             // 
             this.régimesDeSortie.Name = "régimesDeSortie";
-            this.régimesDeSortie.Size = new System.Drawing.Size(277, 22);
+            this.régimesDeSortie.Size = new System.Drawing.Size(238, 22);
             this.régimesDeSortie.Text = "Régimes de sortie";
             // 
             // MAJBaseDeDonnées
             // 
             this.MAJBaseDeDonnées.Name = "MAJBaseDeDonnées";
-            this.MAJBaseDeDonnées.Size = new System.Drawing.Size(277, 22);
+            this.MAJBaseDeDonnées.Size = new System.Drawing.Size(238, 22);
             this.MAJBaseDeDonnées.Text = "MAJ base de données";
-            // 
-            // duréeDeLaPauseAutorisantLesSorties
-            // 
-            this.duréeDeLaPauseAutorisantLesSorties.Name = "duréeDeLaPauseAutorisantLesSorties";
-            this.duréeDeLaPauseAutorisantLesSorties.Size = new System.Drawing.Size(277, 22);
-            this.duréeDeLaPauseAutorisantLesSorties.Text = "Durée de la pause autorisant les sorties";
             // 
             // longueurIdentifiantRFID
             // 
             this.longueurIdentifiantRFID.Name = "longueurIdentifiantRFID";
-            this.longueurIdentifiantRFID.Size = new System.Drawing.Size(277, 22);
+            this.longueurIdentifiantRFID.Size = new System.Drawing.Size(238, 22);
             this.longueurIdentifiantRFID.Text = "Longueur identifiant RFID";
             // 
             // gestionDesDonnéesÉlèves
             // 
             this.gestionDesDonnéesÉlèves.Name = "gestionDesDonnéesÉlèves";
-            this.gestionDesDonnéesÉlèves.Size = new System.Drawing.Size(277, 22);
+            this.gestionDesDonnéesÉlèves.Size = new System.Drawing.Size(238, 22);
             this.gestionDesDonnéesÉlèves.Text = "Gestion des données élèves";
             // 
             // SchoolLifeOffice
@@ -406,9 +390,7 @@
         private System.Windows.Forms.ToolStripMenuItem Administration;
         private System.Windows.Forms.ToolStripMenuItem SchoolLifeOffice;
         private System.Windows.Forms.ToolStripMenuItem MAJBaseDeDonnées;
-        private System.Windows.Forms.ToolStripMenuItem duréeDeLaPauseAutorisantLesSorties;
         private System.Windows.Forms.ToolStripMenuItem gestionDesDonnéesÉlèves;
-        private System.Windows.Forms.ToolStripMenuItem redémarrerLeServer;
         private System.Windows.Forms.ToolStripMenuItem longueurIdentifiantRFID;
         private System.Windows.Forms.ToolStripMenuItem SchoolData;
         private System.Windows.Forms.ToolStripMenuItem photosÉtudiants;

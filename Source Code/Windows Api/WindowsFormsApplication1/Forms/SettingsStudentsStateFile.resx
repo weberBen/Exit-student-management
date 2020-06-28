@@ -118,6 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="textBox1.Text" xml:space="preserve">
-    <value>Veuillez indiquer les numéros des colonnes (en débutant le compte à 1) correspondant aux différents éléments requis pour extraire les données du fichier contenant le régime de demi-pension des élèves (accompagné de leurs noms, prénoms, classe et sexe). Le fichier doit être fourni selon l'extension CVS</value>
+    <value>Veuillez indiquer les numéros des colonnes (en débutant le compte à 1) correspondant aux différents éléments requis pour extraire les données du fichier contenant le régime de demi-pension des élèves (accompagné de leurs noms, prénoms, classe et sexe). Le fichier doit être fourni selon l'extension CVS.
+Toutes les colonnes dont l'indice est 0 ne seront pas prises en compte lors du traitement des données par la suite.</value>
   </data>
 </root>

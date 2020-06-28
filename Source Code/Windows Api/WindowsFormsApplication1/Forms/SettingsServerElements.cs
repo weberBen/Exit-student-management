@@ -125,6 +125,7 @@ namespace WindowsFormsApplication1.Forms
             Settings.ServerIpAdress = ipAdressTextBox.Text; //change the ip adress the specific file
             Settings.ServerPort = port;//change the port in the specific file
 
+            MessageBox.Show("Les modifications ont été enregistré mais elles ne seront prise en compte qu'au prochain démarrage de l'application");
             this.Close();
         }
 

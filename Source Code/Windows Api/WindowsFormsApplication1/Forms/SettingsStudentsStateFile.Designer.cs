@@ -49,8 +49,8 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.textBox15 = new System.Windows.Forms.TextBox();
             this.exit_regime_textBox = new System.Windows.Forms.TextBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.sex_groupBox = new System.Windows.Forms.GroupBox();
+            this.halfBoardDays_groupBox = new System.Windows.Forms.GroupBox();
             this.sun_textBox = new System.Windows.Forms.TextBox();
             this.textBox18 = new System.Windows.Forms.TextBox();
             this.separator_days_textBox = new System.Windows.Forms.TextBox();
@@ -76,8 +76,8 @@
             this.textBox19 = new System.Windows.Forms.TextBox();
             this.separator_csv_textBox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
+            this.sex_groupBox.SuspendLayout();
+            this.halfBoardDays_groupBox.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.SuspendLayout();
@@ -102,7 +102,6 @@
             this.last_name_textBox.Name = "last_name_textBox";
             this.last_name_textBox.Size = new System.Drawing.Size(49, 23);
             this.last_name_textBox.TabIndex = 1;
-            this.last_name_textBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxes_KeyPress);
             // 
             // first_name_textBox
             // 
@@ -111,8 +110,7 @@
             this.first_name_textBox.Location = new System.Drawing.Point(193, 52);
             this.first_name_textBox.Name = "first_name_textBox";
             this.first_name_textBox.Size = new System.Drawing.Size(49, 23);
-            this.first_name_textBox.TabIndex = 2;
-            this.first_name_textBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxes_KeyPress);
+            this.first_name_textBox.TabIndex = 2; 
             // 
             // division_textBox
             // 
@@ -122,7 +120,6 @@
             this.division_textBox.Name = "division_textBox";
             this.division_textBox.Size = new System.Drawing.Size(49, 23);
             this.division_textBox.TabIndex = 3;
-            this.division_textBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxes_KeyPress);
             // 
             // sex_textBox
             // 
@@ -132,7 +129,6 @@
             this.sex_textBox.Name = "sex_textBox";
             this.sex_textBox.Size = new System.Drawing.Size(49, 23);
             this.sex_textBox.TabIndex = 4;
-            this.sex_textBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxes_KeyPress);
             // 
             // half_board_days_textBox
             // 
@@ -142,7 +138,6 @@
             this.half_board_days_textBox.Name = "half_board_days_textBox";
             this.half_board_days_textBox.Size = new System.Drawing.Size(49, 23);
             this.half_board_days_textBox.TabIndex = 5;
-            this.half_board_days_textBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBoxes_KeyPress);
             // 
             // textBox2
             // 
@@ -223,7 +218,7 @@
             this.textBox7.Name = "textBox7";
             this.textBox7.Size = new System.Drawing.Size(92, 63);
             this.textBox7.TabIndex = 13;
-            this.textBox7.Text = "*Abréviation sexe féminin (ex : F)";
+            this.textBox7.Text = "Abréviation sexe féminin (ex : F)";
             // 
             // textBox8
             // 
@@ -234,7 +229,7 @@
             this.textBox8.Name = "textBox8";
             this.textBox8.Size = new System.Drawing.Size(92, 63);
             this.textBox8.TabIndex = 14;
-            this.textBox8.Text = "*Abréviation sexe masculin (ex : M)";
+            this.textBox8.Text = "Abréviation sexe masculin (ex : M)";
             // 
             // shortname_female_textBox
             // 
@@ -283,7 +278,7 @@
             this.textBox15.Name = "textBox15";
             this.textBox15.Size = new System.Drawing.Size(155, 23);
             this.textBox15.TabIndex = 12;
-            this.textBox15.Text = "*Nom";
+            this.textBox15.Text = "Régime de sortie";
             // 
             // exit_regime_textBox
             // 
@@ -294,43 +289,43 @@
             this.exit_regime_textBox.Size = new System.Drawing.Size(49, 23);
             this.exit_regime_textBox.TabIndex = 11;
             // 
-            // groupBox2
+            // sex_groupBox
             // 
-            this.groupBox2.Controls.Add(this.textBox7);
-            this.groupBox2.Controls.Add(this.textBox8);
-            this.groupBox2.Controls.Add(this.shortname_male_textBox);
-            this.groupBox2.Controls.Add(this.shortname_female_textBox);
-            this.groupBox2.Location = new System.Drawing.Point(282, 333);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(224, 234);
-            this.groupBox2.TabIndex = 18;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Abréviations sexe utilisées";
+            this.sex_groupBox.Controls.Add(this.textBox7);
+            this.sex_groupBox.Controls.Add(this.textBox8);
+            this.sex_groupBox.Controls.Add(this.shortname_male_textBox);
+            this.sex_groupBox.Controls.Add(this.shortname_female_textBox);
+            this.sex_groupBox.Location = new System.Drawing.Point(282, 333);
+            this.sex_groupBox.Name = "sex_groupBox";
+            this.sex_groupBox.Size = new System.Drawing.Size(224, 234);
+            this.sex_groupBox.TabIndex = 18;
+            this.sex_groupBox.TabStop = false;
+            this.sex_groupBox.Text = "Abréviations sexe utilisées";
             // 
-            // groupBox3
+            // halfBoardDays_groupBox
             // 
-            this.groupBox3.Controls.Add(this.sun_textBox);
-            this.groupBox3.Controls.Add(this.textBox18);
-            this.groupBox3.Controls.Add(this.separator_days_textBox);
-            this.groupBox3.Controls.Add(this.textBox16);
-            this.groupBox3.Controls.Add(this.sat_textBox);
-            this.groupBox3.Controls.Add(this.mon_textBox);
-            this.groupBox3.Controls.Add(this.tue_textBox);
-            this.groupBox3.Controls.Add(this.wed_textBox);
-            this.groupBox3.Controls.Add(this.thu_textBox);
-            this.groupBox3.Controls.Add(this.fri_textBox);
-            this.groupBox3.Controls.Add(this.textBox14);
-            this.groupBox3.Controls.Add(this.textBox9);
-            this.groupBox3.Controls.Add(this.textBox10);
-            this.groupBox3.Controls.Add(this.textBox11);
-            this.groupBox3.Controls.Add(this.textBox12);
-            this.groupBox3.Controls.Add(this.textBox13);
-            this.groupBox3.Location = new System.Drawing.Point(12, 318);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(264, 302);
-            this.groupBox3.TabIndex = 19;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Abréviations jours utilisées";
+            this.halfBoardDays_groupBox.Controls.Add(this.sun_textBox);
+            this.halfBoardDays_groupBox.Controls.Add(this.textBox18);
+            this.halfBoardDays_groupBox.Controls.Add(this.separator_days_textBox);
+            this.halfBoardDays_groupBox.Controls.Add(this.textBox16);
+            this.halfBoardDays_groupBox.Controls.Add(this.sat_textBox);
+            this.halfBoardDays_groupBox.Controls.Add(this.mon_textBox);
+            this.halfBoardDays_groupBox.Controls.Add(this.tue_textBox);
+            this.halfBoardDays_groupBox.Controls.Add(this.wed_textBox);
+            this.halfBoardDays_groupBox.Controls.Add(this.thu_textBox);
+            this.halfBoardDays_groupBox.Controls.Add(this.fri_textBox);
+            this.halfBoardDays_groupBox.Controls.Add(this.textBox14);
+            this.halfBoardDays_groupBox.Controls.Add(this.textBox9);
+            this.halfBoardDays_groupBox.Controls.Add(this.textBox10);
+            this.halfBoardDays_groupBox.Controls.Add(this.textBox11);
+            this.halfBoardDays_groupBox.Controls.Add(this.textBox12);
+            this.halfBoardDays_groupBox.Controls.Add(this.textBox13);
+            this.halfBoardDays_groupBox.Location = new System.Drawing.Point(12, 318);
+            this.halfBoardDays_groupBox.Name = "halfBoardDays_groupBox";
+            this.halfBoardDays_groupBox.Size = new System.Drawing.Size(264, 302);
+            this.halfBoardDays_groupBox.TabIndex = 19;
+            this.halfBoardDays_groupBox.TabStop = false;
+            this.halfBoardDays_groupBox.Text = "Abréviations jours utilisées";
             // 
             // sun_textBox
             // 
@@ -373,7 +368,7 @@
             this.textBox16.Name = "textBox16";
             this.textBox16.Size = new System.Drawing.Size(155, 59);
             this.textBox16.TabIndex = 23;
-            this.textBox16.Text = "*Caractère utilisé pour séparer les jours (ex: Lu-Ma-Me...)";
+            this.textBox16.Text = "Caractère utilisé pour séparer les jours (ex: Lu-Ma-Me...)";
             // 
             // sat_textBox
             // 
@@ -582,8 +577,8 @@
             this.ClientSize = new System.Drawing.Size(785, 653);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
-            this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.halfBoardDays_groupBox);
+            this.Controls.Add(this.sex_groupBox);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.cancel_button);
             this.Controls.Add(this.save_button);
@@ -594,10 +589,10 @@
             this.Text = "Gestion du fichier source étudiant";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
+            this.sex_groupBox.ResumeLayout(false);
+            this.sex_groupBox.PerformLayout();
+            this.halfBoardDays_groupBox.ResumeLayout(false);
+            this.halfBoardDays_groupBox.PerformLayout();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
             this.groupBox5.ResumeLayout(false);
@@ -627,8 +622,8 @@
         private System.Windows.Forms.TextBox shortname_female_textBox;
         private System.Windows.Forms.TextBox shortname_male_textBox;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.GroupBox sex_groupBox;
+        private System.Windows.Forms.GroupBox halfBoardDays_groupBox;
         private System.Windows.Forms.TextBox sat_textBox;
         private System.Windows.Forms.TextBox mon_textBox;
         private System.Windows.Forms.TextBox tue_textBox;

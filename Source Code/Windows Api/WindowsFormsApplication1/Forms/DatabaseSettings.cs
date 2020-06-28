@@ -40,6 +40,7 @@ namespace WindowsFormsApplication1.Forms
             parms_db.DatabaseName = database_name_textBox.Text;
 
             ToolsClass.Settings.Database = parms_db;
+            MessageBox.Show("Les modifications ont été enregistré mais elles ne seront prise en compte qu'au prochain démarrage de l'application");
 
             this.Close();
         }

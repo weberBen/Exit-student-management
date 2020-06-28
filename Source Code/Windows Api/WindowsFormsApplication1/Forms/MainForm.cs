@@ -37,6 +37,7 @@ using System.Security;
 using ToolsClass;
 using System.Collections.Generic;
 using System.IO.Pipes;
+using System.Threading;
 
 //4e47cf6kp4XP5zuw1dQ6epCoMjOPgMvc42qgT
 /*fonction a modifier pour le site web :
@@ -49,21 +50,22 @@ namespace WindowsFormsApplication1
 
 public partial class MainForm : Form
 {
-    
     LocalServer.HttpServer LocalServer = new LocalServer.HttpServer(); //class that deal with the local server
 
     private const int TIME_OUT_VALUE = 30000; //ms
     private Color CUSTOM_RED = Color.FromArgb(251, 80, 80);
     private Color CUSTOM_GREEN = Color.FromArgb(179, 255, 179);
     private Color CUSTOM_ORANGE = Color.FromArgb(255, 140, 26);
-    private System.Windows.Forms.Timer timer = null;
+    private System.Windows.Forms.Timer timer;
+    private static System.Windows.Forms.Timer timer_connection;
     private const int TIMER_TIME_MINUTES = 2880; //48h
+    private const int TIME_TIMER_PHYSICAL_CONNECTION = SecurityManager.TIMEOUT_PHYSICAL_SESSION_MIN * 60000; //ms
 
-    private TextBox banner = null;
+    private TextBox banner;
     private string actual_text_banner;
     private Color actual_color_banner;
 
-    private Boolean close_named_piped = false;
+    private bool close_named_piped = false;
 
 
     private void closeNamedPipe()
@@ -127,11 +129,15 @@ public partial class MainForm : Form
             });
         }
 
+
     public MainForm()
         {
+
             InitializeComponent();
             banner = this.displayEventTextBox;
-            
+            timer = null;
+
+
             updateComputerTableId();
             EmptyAdmin(); //check if it's needed to set a new admi
             startNamedPipe();
@@ -193,7 +199,10 @@ public partial class MainForm : Form
             timer.Interval = TIMER_TIME_MINUTES*60*1000;//into ms
             timer.Start();
 
-            //run_cmd();
+            timer_connection = new System.Windows.Forms.Timer();
+            timer_connection.Tick += new EventHandler(timerConnectionTick);
+            timer_connection.Interval = TIME_TIMER_PHYSICAL_CONNECTION;// ms
+
         }
 
         private void timerTick(object source, EventArgs e)
@@ -202,6 +211,35 @@ public partial class MainForm : Form
             dailyTask();
             timer.Start();
         }
+
+        private void timerConnectionTick(object source, EventArgs e)
+        {
+             /*When a agent is physically connected to the app we start a timer that represent the resting time before disconnection
+             * At this step there is no more time left
+             * First we ask the user if we want to stay connected by a autoclosing message form (that close after a specific time if there is no answer)
+             * If there is no answer or the agent does not want the stay connected we close the session
+             * Else we restart a new timer
+            */
+            timer_connection.Stop();
+
+
+            string title = "Demande de confirmation";
+            string message = "Utilisez vous encore l'application ?";
+            string text_button_ok = "Oui";
+            string text_button_cancel = "Quiter";
+            int timeout = 10000;//ms
+
+            AutoClosingMessageBox Form = new AutoClosingMessageBox(title, message, timeout, text_button_ok, text_button_cancel);
+            Form.ShowDialog();
+            if (Form.getDialogResult() == true)//user confirm we want the keep using the app
+            {
+                timer_connection.Start();
+                return;
+            }
+
+            terminateSession();
+        }
+
 
         private void disposeObject()
         {
@@ -348,15 +386,6 @@ public partial class MainForm : Form
             }
         }
 
-        private void restartLocalServer()
-        {
-            /*Restart the app if user want to restart the server 
-                * (Notthe best way to deal with that but avoid long quit script)
-            */
-            Process.Start(Application.ExecutablePath); // to start new instance of application
-            this.Close(); //to turn off current app
-        }
-
         private void bannerToPreviousState()
         {
             if ( (actual_text_banner != banner.Text) || (actual_color_banner != banner.BackColor) )
@@ -397,21 +426,36 @@ public partial class MainForm : Form
 
         public void startSession(string session_info)
         {
+            //Set a timer
+            timer_connection.Stop();
+            timer_connection.Start();
+
             resetSecureData();
 
             this.display_session_textBox.BackColor = Color.LightGreen;
             this.display_session_textBox.Text = session_info;
 
             this.Refresh();
+        
         }
 
+        private void clearDisplaySession()
+        {
+            resetSecureData();
+            endPreviousSession();
+        }
+
+        private void terminateSession()
+        {
+            timer_connection.Stop();
+
+            SecurityManager.disconnection();
+            clearDisplaySession();
+        }
 
         private void disconnection_button_Click(object sender, EventArgs e)
         {
-            SecurityManager.disconnection();
-
-            resetSecureData();
-            endPreviousSession();
+            terminateSession();
         }
 
         private void textbox_password_KeyDown(object sender, KeyEventArgs e)
@@ -422,7 +466,7 @@ public partial class MainForm : Form
             }
         }
 
-
+        
         private void connexion_button_Click(object sender, EventArgs e)
         {
             SecureString password = new SecureString();
@@ -439,7 +483,7 @@ public partial class MainForm : Form
             }
             else
             {
-                endPreviousSession();
+                terminateSession();
                 MessageBox.Show("Vous n'avez pas les droits nécessaire pour accéder à cette application");
             }
 
@@ -450,7 +494,7 @@ public partial class MainForm : Form
             }
         }
 
-
+        
 
 
         private void submenuItem_Click(object sender, EventArgs e)
@@ -492,7 +536,6 @@ public partial class MainForm : Form
                         clearData();
                     }
                         break;
-
                 case "purgerLaBaseDeDonnées":
                     {
                         string title = "Demande de confirmation";
@@ -509,8 +552,8 @@ public partial class MainForm : Form
                                         + "Cette action est irréversible et aura pour effet de supprimer l'intégralité des données sauvegardées, "
                                         + "hormis celle concernant les agents.";
                             Tools.sendMail(mail_title, mail_body, ToolsClass.Settings.MailsList);
-                            
-                            //purge the whole database
+
+                            //purge the whole database                            
                             DataBase database = new DataBase();
                             if(database.purgeAllData()==Definition.NO_ERROR_INT_VALUE)
                             {
@@ -521,12 +564,7 @@ public partial class MainForm : Form
                             }
                         }
                     }
-                    break;
-                case "redémarrerLeServer":
-                    {
-                        restartLocalServer();
-                    }
-                    break;
+                    break;   
                 /*----------------------------------  Settings  ---------------------------------- */
                 case "nomDeDomainDuServerSQL":
                     {
@@ -598,12 +636,6 @@ public partial class MainForm : Form
                 case "régimesDeSortie":
                     {
                         ExitRegime Form = new ExitRegime();
-                        Form.ShowDialog();
-                    }
-                    break;
-                case "duréeDeLaPauseAutorisantLesSorties":
-                    {
-                        SettingsLengthExitBreak Form = new SettingsLengthExitBreak();
                         Form.ShowDialog();
                     }
                     break;

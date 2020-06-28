@@ -86,9 +86,7 @@ static class SecurityManager
 
     private const string CHAR_VALUE_FOR_PASSWORD = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     public const int MIN_CHAR_IN_PASSWORD = 10;
-    private static System.Timers.Timer timer;
-    private const int TIMEOUT_PHYSICAL_SESSION_MIN = 15; //min
-    private const int TIME_TIMER = TIMEOUT_PHYSICAL_SESSION_MIN * 60000; //ms
+    public const int TIMEOUT_PHYSICAL_SESSION_MIN = 15; //min 
     private static Agent connected_agent;
 
     private const int NUMBER_CONNECTION_ATTEMPS_ALLOWED = 3;
@@ -117,7 +115,6 @@ static class SecurityManager
     private static DataBase database = new DataBase();
 
     public const int TIME_BEFORE_SUPPRESSION_OF_DATA_FROM_DATABASE_DAYS = 2;
-
 
     /*---------------------------------------------------- Tools for connexion ------------------------------------------------*/
 
@@ -414,6 +411,7 @@ static class SecurityManager
         return connected_agent.tableId;
     }
 
+
     public static int setConnection(string id, SecureString secure_given_password)
     {
         /*When a user is physically connected to the app we retrieve all the information about him in a structure Agent from the database
@@ -424,10 +422,6 @@ static class SecurityManager
         if(id=="" || secure_given_password == null)
         {
             connected_agent.toDefault();
-            if (timer != null)
-            {
-                timer.Stop();
-            }
 
             return ToolsClass.Definition.ERROR_INT_VALUE; ;
         }
@@ -452,25 +446,11 @@ static class SecurityManager
         {
             connected_agent = agent;//save temporarily the information
 
-            //Set a timer for reason detailed later
-            if(timer!=null)
-            {
-                timer.Stop();
-            }
-            timer = new System.Timers.Timer();
-            timer.Interval = TIME_TIMER;
-            timer.Elapsed += new ElapsedEventHandler(onTimeEnd); ; //event timer tick
-            timer.Start();
-
             return ToolsClass.Definition.NO_ERROR_INT_VALUE;
         }
         else
         {
             connected_agent.toDefault();
-            if (timer!=null)
-            {
-                timer.Stop();
-            } 
         }
 
         return ToolsClass.Definition.ERROR_INT_VALUE;
@@ -494,56 +474,6 @@ static class SecurityManager
             {
                 form.Close();
             }
-        }
-    }
-
-
-    private static void onTimeEnd(object source, ElapsedEventArgs e) //handler when the time counter is finished
-    {
-        /*When a agent is physically connected to the app we start a timer that represent the resting time before disconnection
-         * At this step there is no more time left
-         * First we ask the user if we want to stay connected by a autoclosing message form (that close after a specific time if there is no answer)
-         * If there is no answer or the agent does not want the stay connected we close the session
-         * Else we restart a new timer
-        */
-        timer.Stop();
-
-        /*If the form that check online data about the student is opened it's means that user can't use the app
-         * In order to avoid perturbating the data grabbing if that form is openned then we just disconnect the previous user
-         * without showing him the autoclosing box that ask the user if he wants to remain connected or not
-        */
-        bool is_online_update_data_running = false;
-        foreach (Form form in Application.OpenForms)
-        {
-            /* if (form.Name == typeof(OnlineDatabaseForm).Name)
-             {
-                 is_online_update_data_running = true;//the form is opened
-             }*/
-        }
-
-        if (is_online_update_data_running)
-        {
-            disconnection();
-            return;
-        }
-
-        string title = "Demande de confirmation";
-        string message = "Utilisez vous encore l'application ?";
-        string text_button_ok = "Oui";
-        string text_button_cancel = "Quiter";
-        int timeout = 10000;//ms
-
-        AutoClosingMessageBox Form = new AutoClosingMessageBox(title, message, timeout, text_button_ok, text_button_cancel);
-        Form.ShowDialog();
-        if (Form.getDialogResult() == true)//user confirm we want the keep using the app
-        {
-            timer.Start();
-
-        }
-        else//user quit or timeout
-        {
-            disconnection();
-
         }
     }
 
@@ -1092,4 +1022,3 @@ static class SecurityManager
 
 
 }
-

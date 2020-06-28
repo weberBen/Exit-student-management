@@ -166,11 +166,14 @@ namespace ToolsClass
 
         public static string NAMED_PIPE = Settings.NamedPipe;
         public static Boolean EXTERNAL_DATABASE_OFFLINE = true;
+
+        public static int DEFAULT_EXIT_REGIME_DATABASE_TABLE_ID = Settings.DefaultExitRegimeDatabaseTableId;
     }
 
 
     class Tools
     {
+
         /*Class is used to saved all kind of usefull method that are not relative to a specific namespace*/
         public static Tuple<string, string> photoToBase64(string path_photo)
         {
@@ -1560,12 +1563,14 @@ namespace ToolsClass
 
             private int id;//could be used
             public string name;
+            public bool exitEndOfDay;
             public List<string> authorizations;//store only name (which must be unique into the database)
 
             public void toDefault()
             {
                 id = -1;
                 name = "";
+                exitEndOfDay = false;
                 authorizations = new List<string>();
             }
 
@@ -1598,8 +1603,6 @@ namespace ToolsClass
         private const string XML_ATTRIBUTE_VALUE_PATH_URL_FILE = "Path_url_acess_file";
         private const string XML_ATTRIBUTE_VALUE_MAILS_LIST = "Mails_list";
         private const string XML_ATTRIBUTE_VALUE_MAILS_SENDER_PARMS = "List_parameters_for_mails_sender";
-        private const string XML_ATTRIBUTE_VALUE_LENGTH_EXIT_BREAK = "Length_exit_break";
-        public static TimeSpan EXIT_BREAK_NOT_ENABLED_TIMESPAN_VALUE = TimeSpan.Parse("24:00:00");
         private const string XML_ATRIBUTE_VALUE_STUDENTS_STATE_FILE_PARMS = "List_correspondance_columns_state_student_file";
         private const string XML_ATRIBUTE_VALUE_MAILS_PARMS = "List_parameters_for_sending_mails";
         private const string XML_ATTRIBUTE_VALUE_COLUMN_LAST_NAME = "Last_name";
@@ -1643,7 +1646,7 @@ namespace ToolsClass
         private const string XML_ATTRIBUTE_VALUE_SQL_DATABASE_NAME = "Sql_database_name";
         private const string XML_ATTRIBUTE_VALUE_EXIT_BAN_REASONS_LIST = "Exit_ban_reasons_list";
         private const string XML_ATTRIBUTE_VALUE_NAMED_PIPE = "Named_pipe";
-        private const string XML_ATTRIBUTE_VALUE_EXIT_REGIME_ACTIVATION_SATE = "Exit_regime_activation_state";
+        private const string XML_ATTRIBUTE_VALUE_DEFAULT_EXIT_REGIME_DATABASE_TABLE_ID = "Default_exit_regime_database_table_id";
 
 
         public static string ServerIpAdress
@@ -1686,7 +1689,7 @@ namespace ToolsClass
 
         }
 
-        public static bool ExitRegimeActivationState
+        public static int DefaultExitRegimeDatabaseTableId
         {
             /*By using the path to the XML file define by the constant expression PATH_TO_TOOLS_FILE
              * and using the desired xml attribute (like XML_ATTRIBUTE_IP or XML_ATTRIBUTE_Port)
@@ -1695,27 +1698,19 @@ namespace ToolsClass
             get
             {
                 string res = XmlHelper.readXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
-                                            Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_EXIT_REGIME_ACTIVATION_SATE);
+                                            Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_DEFAULT_EXIT_REGIME_DATABASE_TABLE_ID);
 
-                int state = 0;
-                int.TryParse(res, out state);
+                int output = -1;
+                int.TryParse(res, out output);
 
-                if (state == 1)
-                    return true;
-                else
-                    return false;
+                return output;
             }
 
             set
             {
-                int val;
-                if (value)
-                    val = 1;
-                else
-                    val = 0;
-
+                Definition.DEFAULT_EXIT_REGIME_DATABASE_TABLE_ID = value;
                 XmlHelper.changeXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
-                                       Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_EXIT_REGIME_ACTIVATION_SATE, val);
+                                       Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_DEFAULT_EXIT_REGIME_DATABASE_TABLE_ID, value);
             }
 
         }
@@ -1813,32 +1808,6 @@ namespace ToolsClass
                                               element, Definition.ATTRIBUTE_ELEMENT_XML_FILE, attribute_element_list);
             }
         }
-
-
-        public static TimeSpan ExitBreak
-        {
-            get
-            {
-                string text = XmlHelper.readXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
-                                                Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_LENGTH_EXIT_BREAK);
-                return Tools.stringToTimeSpan(text);
-            }
-
-            set
-            {
-                string text_time = Tools.timeToStringFromTimeSpan(value);
-                XmlHelper.changeXMLElement(Definition.PATH_TO_TOOLS_FILE, Definition.ELEMENT_TAG_XML_FILE,
-                                            Definition.ATTRIBUTE_ELEMENT_XML_FILE, XML_ATTRIBUTE_VALUE_LENGTH_EXIT_BREAK, text_time);
-            }
-
-        }
-
-        public static bool isExitBreakEnabled(TimeSpan length_exit_break)
-        {
-            return length_exit_break != EXIT_BREAK_NOT_ENABLED_TIMESPAN_VALUE;
-            //check if the timeSPan object is set to the defautl timeSpan
-        }
-
 
         public static void setPathToUrlFile(string path_to_folder, string file_name)
         {
@@ -1945,26 +1914,31 @@ namespace ToolsClass
 
                 try
                 {
-                    int index = 0;
+                    int index = -1;
 
                     Int32.TryParse(elements[0], out index);
                     parms.lastNameIndex = index;
 
-                    index = 0;
+                    index = -1;
                     Int32.TryParse(elements[1], out index);
                     parms.firstNameIndex = index;
 
-                    index = 0;
+                    index = -1;
                     Int32.TryParse(elements[2], out index);
                     parms.divisionIndex = index;
 
-                    index = 0;
+                    index = -1;
                     Int32.TryParse(elements[3], out index);
                     parms.sexIndex = index;
 
-                    index = 0;
+                    index = -1;
                     Int32.TryParse(elements[4], out index);
                     parms.halfBoardDaysIndex = index;
+
+                    index = -1;
+                    Int32.TryParse(elements[15], out index);
+                    parms.exitRegimeIndex = index;
+
 
                     parms.femaleShortname = elements[5];
                     parms.maleShortname = elements[6];
@@ -1984,11 +1958,6 @@ namespace ToolsClass
                     else
                         c = (char)index;
                     parms.separatorDays = c;
-
-
-                    index = 0;
-                    Int32.TryParse(elements[15], out index);
-                    parms.exitRegimeIndex = index;
 
 
                     index = -1;

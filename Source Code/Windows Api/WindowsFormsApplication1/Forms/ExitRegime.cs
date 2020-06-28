@@ -80,7 +80,9 @@ namespace WindowsFormsApplication1.Forms
 
         private Dictionary<string, List<string>> dict_relation_RA;
 
-        private static Selection SelectedRegime;
+        private Selection SelectedRegime;
+
+        private DataGridViewCell default_regime_cell;
 
         public ExitRegime()
         {
@@ -90,12 +92,8 @@ namespace WindowsFormsApplication1.Forms
             SelectedRegime = new Selection();
             dict_relation_RA = new Dictionary<string, List<string>>();
             color = selected_regime_textBox.BackColor;
-
-
+            default_regime_cell = null;
             
-            activate_checkBox.CheckedChanged += activate_checkBox_CheckedChanged;
-            activate_checkBox.Checked = Settings.ExitRegimeActivationState;
-            activationExitRegime();
 
             //--------------------------------- AUTHORIZATION DATAGRIDVIEW ---------------------------------
             Authorization_dataGridView.UserDeletingRow += Authorization_dataGridView_UserDeletingRow;
@@ -123,7 +121,7 @@ namespace WindowsFormsApplication1.Forms
             Exit_regime_dataGridView.CellBeginEdit += Exit_regime_dataGridView_CellBeginEdit;
             Exit_regime_dataGridView.CellClick += Exit_regime_dataGridView_CellClick;
 
-
+            default_regime_checkBox.CheckedChanged += default_regime_checkBox_CheckedChanged;
 
             //--------------------------------- RELATION DATAGRIDVIEW ---------------------------------
 
@@ -147,23 +145,6 @@ namespace WindowsFormsApplication1.Forms
             SelectedRegime.Item = null;
         }
 
-        private void activationExitRegime()
-        {
-            if (activate_checkBox.Checked)
-            {
-                main_groupBox.Enabled = true;
-            }
-            else
-            {
-                main_groupBox.Enabled = false;
-            }
-        }
-
-        private void activate_checkBox_CheckedChanged(Object sender, EventArgs e)
-        {
-            activationExitRegime();
-        }
-
 
         /* --------------------------------------------------------------------------------------------------------------------------------------------------------------
          * 
@@ -175,10 +156,24 @@ namespace WindowsFormsApplication1.Forms
         private void InitializeRegimeDataGrid(List<StudentExitRegime> list)
         {
             //populate the datagridview with exit regime label
+            int default_regime_table_id = Definition.DEFAULT_EXIT_REGIME_DATABASE_TABLE_ID;
+
             foreach (StudentExitRegime regime in list)
             {
                 int row = Exit_regime_dataGridView.Rows.Add(regime.name);
                 Exit_regime_dataGridView.Rows[row].Tag = regime.Id;//to track modification on existing element into the database
+
+
+                DataGridViewCheckBoxCell cell_checkBox = (DataGridViewCheckBoxCell)Exit_regime_dataGridView.Rows[row].Cells[1];
+                if(regime.exitEndOfDay)
+                    cell_checkBox.Value = cell_checkBox.TrueValue;
+                else
+                    cell_checkBox.Value = cell_checkBox.FalseValue;
+
+                if (default_regime_table_id!=-1 && regime.Id== default_regime_table_id)
+                {
+                    default_regime_cell = Exit_regime_dataGridView.Rows[row].Cells[0];
+                }
             }
         }
 
@@ -193,9 +188,10 @@ namespace WindowsFormsApplication1.Forms
             if (e.ColumnIndex == column_index_label)
             {
                 //check that the edited label is unique and if it's not replace the value by the previous one (before modification was made)
-
+                
                 //get value of the current selected regime
-                var tmp = Exit_regime_dataGridView.Rows[e.RowIndex].Cells[column_index_label].Value;
+                DataGridViewCell cell = Exit_regime_dataGridView.Rows[e.RowIndex].Cells[column_index_label];
+                var tmp = cell.Value;
                 if (tmp == null)//no value then do nothing
                     return;
                 string current_label = tmp.ToString();
@@ -231,7 +227,7 @@ namespace WindowsFormsApplication1.Forms
                     }
                     else//modification of an existing exit regime
                     {
-                        SelectedRegime.Item = current_label;
+                        SelectedRegime.Item = cell;
                         dict_relation_RA.Add(current_label, dict_relation_RA[value_before_edit_cell_regime.ToString()]);
                         dict_relation_RA.Remove(value_before_edit_cell_regime.ToString());
                     }
@@ -293,6 +289,64 @@ namespace WindowsFormsApplication1.Forms
             */
         }
 
+        private int getIdFromCell(DataGridViewCell cell)
+        {
+            if (cell == null)
+                return -1;
+
+            object tag = cell.Tag;
+            if (tag == null)
+                return -1;
+
+            return (int)tag;
+        }
+
+
+        private bool programmed_check_default_regime_checkBox = false;
+
+        private void default_regime_checkBox_CheckedChanged(object sender, System.EventArgs e)
+        {
+            if (!programmed_check_default_regime_checkBox)
+            {
+                if (SelectedRegime.Item == null)
+                {
+                    programmed_check_default_regime_checkBox = true;
+
+                    default_regime_checkBox.Checked = false;
+                    MessageBox.Show("Impossible de paramétrer un régime par défaut : aucun régime selectionné");
+
+                    programmed_check_default_regime_checkBox = false;
+                }
+                else
+                {
+                    if (default_regime_checkBox.Checked)
+                    {
+                        default_regime_cell = (DataGridViewCell)SelectedRegime.Item;
+                        MessageBox.Show("Le régime par défaut est désormais : <<" + (string)default_regime_cell.Value + ">>");
+                    }
+                    else
+                    {
+                        default_regime_cell = null;
+                        MessageBox.Show("Le régime par défaut n'est plus paramétré");
+                    }
+                }
+            }
+        }
+
+        private void defaultRegimeCheckBoxManagement(bool check)
+        {
+            programmed_check_default_regime_checkBox = true;
+            if (check)//the following action fire the checkChange event that modify the value of the global variable
+            {
+                default_regime_checkBox.Checked = true;
+            }
+            else
+            {
+                default_regime_checkBox.Checked = false;
+            }
+            programmed_check_default_regime_checkBox = false;
+        }
+
         private void Exit_regime_dataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0)
@@ -303,12 +357,14 @@ namespace WindowsFormsApplication1.Forms
             int column_index_relation = Authorization_dataGridView.Columns["relation_authorization"].Index;
 
             //get label of the selected regime
-            SelectedRegime.Item = Exit_regime_dataGridView.Rows[e.RowIndex].Cells[column_index_label].Value;
-            if (SelectedRegime.Item == null)//no selected regime
+            DataGridViewCell cell = Exit_regime_dataGridView.Rows[e.RowIndex].Cells[column_index_label];
+            SelectedRegime.Item = cell;
+
+            string label_regime = getNameFromCell(cell);
+            if (label_regime == null)//no selected regime
             {
                 return;
             }
-            string label_regime = (string)SelectedRegime.Item;
 
             //check if it already exists into the database
             if (!dict_relation_RA.ContainsKey(label_regime))
@@ -341,6 +397,9 @@ namespace WindowsFormsApplication1.Forms
                 }
 
             }
+
+            //check if the current exit regime is set to default
+            defaultRegimeCheckBoxManagement(default_regime_cell == cell);
         }
 
         /* --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -662,28 +721,59 @@ namespace WindowsFormsApplication1.Forms
          * 
          * 
           --------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+        private void displayNoSelection()
+        {
+            Authorization_dataGridView.Columns["relation_authorization"].Visible = false;
+            selected_regime_textBox.Text = "Aucune sélection";
+
+            selected_regime_textBox.BackColor = Color.DarkGray;
+        }
+
+        private void displayNewSelection(string value)
+        {
+            Authorization_dataGridView.Columns["relation_authorization"].Visible = true;
+            selected_regime_textBox.Text = "Selection : <<" + value + ">>";
+
+            selected_regime_textBox.BackColor = color;
+        }
 
         private object updateSelectionSet(object value_selection)
         {
+           
             //function call each time the current selected exit regime is set
-            Object output = null;
-
+            Object output = value_selection;
             if (value_selection != null)
             {
-                output = value_selection.ToString();
-
-                Authorization_dataGridView.Columns["relation_authorization"].Visible = true;
-                selected_regime_textBox.Text = "Selection : <<" + (string)output+">>";
-
-                selected_regime_textBox.BackColor = color;
+                DataGridViewCell cell = (DataGridViewCell)value_selection;
+                if (cell.Value != null)
+                {
+                    displayNewSelection((string)cell.Value);
+                }
+                else
+                {
+                    displayNoSelection();
+                }
 
             }
             else//no regime selected
             {
-                Authorization_dataGridView.Columns["relation_authorization"].Visible = false;
-                selected_regime_textBox.Text = "Aucune sélection";
+                displayNoSelection();
+            }
 
-                selected_regime_textBox.BackColor = Color.DarkGray;
+            return output;
+        }
+
+        private string getNameFromCell(object obj)
+        {
+            string output = null;
+
+            if (obj != null)
+            {
+                DataGridViewCell cell = (DataGridViewCell)obj;
+                if (cell.Value != null)
+                {
+                    return (cell.Value).ToString();
+                }
             }
 
             return output;
@@ -699,13 +789,13 @@ namespace WindowsFormsApplication1.Forms
             int column_index_label = Authorization_dataGridView.Columns["label_authorization"].Index;
             int column_index_relation = Authorization_dataGridView.Columns["relation_authorization"].Index;
 
-            if (SelectedRegime.Item == null)//no regime selected
+            string label_regime = getNameFromCell(SelectedRegime.Item);
+            if (label_regime == null)//no regime selected
             {
                 MessageBox.Show("Erreur : le nom du régime actuel est nul");
                 activateControl();//active the previoulsy disabled content
                 return;
             }
-            string label_regime = (string)SelectedRegime.Item;
 
             //add the regime if it has not been done before
             if (!dict_relation_RA.ContainsKey(label_regime))
@@ -746,16 +836,6 @@ namespace WindowsFormsApplication1.Forms
         {
             //users wants to definitively save the changes
             disactivateControl();//disable all the content during the process
-
-            if(activate_checkBox.Checked)
-            {
-                Settings.ExitRegimeActivationState = true;
-            }else
-            {
-                Settings.ExitRegimeActivationState = false;
-                this.Close();
-                return;
-            }
 
             StudentExitRegime regime;
             StudentExitRegimeAuthorization authorization;
@@ -838,9 +918,16 @@ namespace WindowsFormsApplication1.Forms
                 regime.name = label_regime;
                 regime.authorizations = dict_relation_RA[label_regime];
 
+                int index = Exit_regime_dataGridView.Columns["exitEndOfDay_regime"].Index;
+                DataGridViewCheckBoxCell cell_checkBox = (DataGridViewCheckBoxCell)Exit_regime_dataGridView.Rows[row].Cells[index];
+                if (cell_checkBox.Value == cell_checkBox.TrueValue)
+                    regime.exitEndOfDay = true;
+                else
+                    regime.exitEndOfDay = false;
+
+
 
                 temp_list_regime.Add(regime);
-
             }
 
             //---------------- solving incorrect format problems ----------------
@@ -907,6 +994,18 @@ namespace WindowsFormsApplication1.Forms
                 MessageBox.Show("Une erreur est survenue : impossible de mettre à jour la base de données");
                 activateControl();//active the previoulsy disabled content
                 this.Close();
+            }
+
+
+            //---------------- update default regime id ----------------
+            string default_regime_name = getNameFromCell(default_regime_cell);
+            if (default_regime_name != null)
+            {
+                int val = database.getExitRegimeId(default_regime_name);
+                Settings.DefaultExitRegimeDatabaseTableId = val;
+            }else
+            {
+                Settings.DefaultExitRegimeDatabaseTableId = -1;
             }
 
 

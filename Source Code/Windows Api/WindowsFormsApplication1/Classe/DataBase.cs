@@ -310,44 +310,19 @@ class DataBase
         int res = 0;
         string request;
 
-        request = "TRUNCATE TABLE TABLE_ELEVES"; //use TRUNCATE rather than DELETE to avoid deleting the tables
-        if (executeNonQueryRequest(request) != Definition.NO_ERROR_INT_VALUE)
+        string[] list = new string[] {"TABLE_ELEVES", "TABLE_SORTIE_TEMPORAIRE", "TABLE_BLOCAGE", "TABLE_BLOCAGE_TEMPORAIRE", "TABLE_REGISTRE", "TABLE_AUTORISATION_SORTIE", "TABLE_CLASSES",
+        "TABLE_REGIMES_SORTIE", "TABLE_RELATIONS_REGIME_PERMISSION", "TABLE_PERMISSIONS_REGIME"};
+
+        foreach(string table in list)
         {
-            res++;
-        }
-        request = "TRUNCATE TABLE TABLE_SORTIE_TEMPORAIRE";
-        if (executeNonQueryRequest(request) != Definition.NO_ERROR_INT_VALUE)
-        {
-            res++;
-        }
-        request = "TRUNCATE TABLE TABLE_BLOCAGE";
-        if (executeNonQueryRequest(request) != Definition.NO_ERROR_INT_VALUE)
-        {
-            res++;
-        }
-        request = "TRUNCATE TABLE TABLE_BLOCAGE_TEMPORAIRE";
-        if (executeNonQueryRequest(request) != Definition.NO_ERROR_INT_VALUE)
-        {
-            res++;
-        }
-        request = "TRUNCATE TABLE TABLE_REGISTRE"; //use TRUNCATE rather than DELETE to avoid deleting the tables
-        if (executeNonQueryRequest(request) != Definition.NO_ERROR_INT_VALUE)
-        {
-            res++;
-        }
-        request = "TRUNCATE TABLE TABLE_AUTORISATION_SORTIE"; //use TRUNCATE rather than DELETE to avoid deleting the tables
-        if (executeNonQueryRequest(request) != Definition.NO_ERROR_INT_VALUE)
-        {
-            res++;
-        }
-        request = "TRUNCATE TABLE TABLE_CLASSES"; //use TRUNCATE rather than DELETE to avoid deleting the tables
-        if (executeNonQueryRequest(request) != Definition.NO_ERROR_INT_VALUE)
-        {
-            res++;
+            request = "TRUNCATE TABLE " + table;
+            if (executeNonQueryRequest(request) != Definition.NO_ERROR_INT_VALUE)
+            {
+                res++;
+            }
         }
 
-
-        if(res==0)//no error
+        if (res==0)//no error
         {
             return Definition.NO_ERROR_INT_VALUE;
         }else
@@ -466,10 +441,10 @@ class DataBase
             //update exit regime
             if (regime.Id == -1)//add new exit regime
             {
-                request = "INSERT INTO TABLE_REGIMES_SORTIE (Label) VALUES (@label) ";
+                request = "INSERT INTO TABLE_REGIMES_SORTIE (Label, SortieFinJournee) VALUES (@label, @exitEndOfDay) ";
                 errCode = executeNonQueryRequest(request,
-                    new List<string>(new string[] { "@label" }),
-                    new List<object>(new object[] { regime.name }));
+                    new List<string>(new string[] { "@label", "@exitEndOfDay" }),
+                    new List<object>(new object[] { regime.name, regime.exitEndOfDay }));
 
                 if (errCode != Definition.NO_ERROR_INT_VALUE)
                     return Definition.ERROR_INT_VALUE;
@@ -492,10 +467,10 @@ class DataBase
 
             }else//update existing exit regime
             {
-                request = "UPDATE TABLE_REGIMES_SORTIE SET Label=@label WHERE Id_regime=@table_id ";
+                request = "UPDATE TABLE_REGIMES_SORTIE SET Label=@label, SortieFinJournee=@exitEndDay WHERE Id_regime=@table_id ";
                 errCode = executeNonQueryRequest(request,
-                    new List<string>(new string[] { "@label", "@table_id" }),
-                    new List<object>(new object[] { regime.name, regime.Id }));
+                    new List<string>(new string[] { "@label", "@exitEndDay", "@table_id" }),
+                    new List<object>(new object[] { regime.name, regime.exitEndOfDay, regime.Id }));
 
                 if (errCode != Definition.NO_ERROR_INT_VALUE)
                     return Definition.ERROR_INT_VALUE;
@@ -594,16 +569,60 @@ class DataBase
         return null;
     }
 
+    public int getExitRegimeId(string regime_label)
+    {
+        if (regime_label == null)
+            return -1;
+
+        SqlConnection connection_database = openDataBase();
+
+        try
+        {
+            string request = "SELECT Id_regime FROM TABLE_REGIMES_SORTIE WHERE Label=@label ";
+            SqlDataReader sql_reader = executeReaderRequest(connection_database, request,
+                        new List<string>(new string[] { "@label" }),
+                        new List<object>(new object[] { regime_label }));
+
+            if (sql_reader != null && sql_reader.HasRows)
+            {
+                sql_reader.Read();//the is only one authorization with that name
+                return sql_reader.GetInt32(0);
+            }
+        }
+        catch (Exception e)
+        {
+            return -1;
+        }
+        finally
+        {
+            closeDataBase(connection_database);
+        }
+
+        return -1;
+    }
+
+
     public string getExitRegimeLabel(SqlDataReader reader, int index)
     {
         if (reader == null)
             return null;
         if (index >= reader.FieldCount)
             return null;
-        if (reader.IsDBNull(index))
-            return null;
 
-        return getExitRegimeLabel(reader.GetInt32(index));
+        int id;
+        if (reader.IsDBNull(index))
+        {
+            int default_id = Definition.DEFAULT_EXIT_REGIME_DATABASE_TABLE_ID;
+            if (default_id == -1)
+                return null;
+            else
+                id = default_id;
+        }else
+        {
+            id = reader.GetInt32(index);
+        }
+
+        return getExitRegimeLabel(id);
     }
     
 
@@ -644,7 +663,7 @@ class DataBase
             }
 
             //get all the exit regime label and id
-            request = "SELECT Id_regime, Label FROM TABLE_REGIMES_SORTIE ";
+            request = "SELECT Id_regime, Label, SortieFinJournee FROM TABLE_REGIMES_SORTIE ";
 
             sql_reader = executeReaderRequest(connection_database, request);
 
@@ -658,6 +677,7 @@ class DataBase
 
                     regime.Id = sql_reader.GetInt32(0);
                     regime.name = sql_reader.GetString(1);
+                    regime.exitEndOfDay = sql_reader.GetBoolean(2);
 
                     //get all the authorization associate to the current regime
                     request = "SELECT P.Label " +
@@ -946,7 +966,6 @@ class DataBase
         {
             Tools.ParmsStudentsStateFile parms = Settings.StudentsStateFileParameters;
             DataBase database = new DataBase();
-            bool exitRegimeActivated = Settings.ExitRegimeActivationState;
 
             //set headers
             var newLine = string.Format("{0};{1};{2};{3};{4}", "Nom", "Prenom", "Ligne origine", "Erreur", "Pris en compte");
@@ -1006,19 +1025,17 @@ class DataBase
                     student.division = fields[parms.divisionIndex];
                     student.sex = Tools.SexIntFromString(fields[parms.sexIndex], parms.femaleShortname); //sex (int)
                     student.halfBoardDays = Tools.getNumericHalfBoardDaysFromString(parms, fields[parms.halfBoardDaysIndex]); //half-board regime (string)
-                    if (exitRegimeActivated)
-                    {
-                        student.labelRegime = fields[parms.exitRegimeIndex];
-                    }
-                    else
+                    student.labelRegime = (parms.exitRegimeIndex == -1) ? null : fields[parms.exitRegimeIndex];
+                    if(student.labelRegime!=null && student.labelRegime.Length==0)
                     {
                         student.labelRegime = null;
                     }
-
+                    
                     list.Add(Tuple.Create(student, csvParser.LineNumber));
 
                     count++;
                 }
+                updateStudentTable(list, error_file);
             }
             File.AppendAllText(path_file_error, error_file.ToString());
 
@@ -1082,7 +1099,7 @@ class DataBase
             }
 
             //get exit regime id for the student
-            if (student.labelRegime == null)
+            if (student.labelRegime == null)//raise no error (default value for the exit regime)
             {
                 regime_id = -1;
 
@@ -1099,7 +1116,7 @@ class DataBase
                 }
             }
 
-            //get student id (if it already exists into the database
+            //get student id (if it already exists into the database)
             tmp = getStudentId(connection_database, student.lastName, student.firstName);
             student_id = tmp.Item1;
             if (tmp.Item2.Length != 0)
@@ -1113,7 +1130,7 @@ class DataBase
             //update the database
             if(student_id==-1)//new student
             {
-               errCode = addStudent(connection_database, student.lastName, student.firstName, division_id, regime_id, student.sex, student.halfBoardDays);
+                  errCode = addStudent(connection_database, student.lastName, student.firstName, division_id, regime_id, student.sex, student.halfBoardDays);
 
             } else//update data for the student
             {
@@ -1124,7 +1141,7 @@ class DataBase
             {
                 error = true;
 
-                writeIntoErrorFile(error_file, student.lastName, student.firstName, lineNumber, "un problème sur la base de données est survenu", false);
+                writeIntoErrorFile(error_file, student.lastName, student.firstName, lineNumber, "un problème sur la base de donnees est survenu", false);
                 continue;
             }
         }
@@ -1207,7 +1224,7 @@ class DataBase
             }
             else//new division
             {
-                return Tuple.Create(-1, "Le régime de sortie <<"+labelRegime+">> n'existe pas dans la base de données");
+                return Tuple.Create(-1, "Le regime de sortie <<"+labelRegime+">> n'existe pas dans la base de donnees");
             }
 
         }
